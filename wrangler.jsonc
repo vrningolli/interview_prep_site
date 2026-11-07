@@ -1,7 +1,7 @@
 {
   // Static-site deploy on Cloudflare Workers: serve the Vite build output.
   // Having this file skips wrangler's auto-config (which requires Vite >= 6).
-  "name": "interview-prep-site",
+  "name": "algo-dojo",
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "./dist"
