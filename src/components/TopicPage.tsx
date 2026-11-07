@@ -120,7 +120,7 @@ export default function TopicPage({
   return (
     <div className="topic-card">
       <h2>
-        {topic.emoji} {topic.title}
+        {topic.title}
       </h2>
 
       <div className="plain-english">

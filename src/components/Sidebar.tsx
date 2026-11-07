@@ -1,14 +1,30 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  Boxes,
+  Workflow,
+  Crosshair,
+  RotateCcw,
+  Compass,
+  FileText,
+  Building2,
+  Sparkles,
+  ArrowUpRight,
+  Search,
+  GraduationCap,
+  X,
+  Check,
+} from "lucide-react";
 import { Tab, Topic } from "../types";
 import { useReviewItems, dueNow } from "../review/store";
 
-const TABS: { key: Tab; label: string; emoji: string }[] = [
-  { key: "ds", label: "Data Structures", emoji: "📦" },
-  { key: "algo", label: "Algorithms", emoji: "⚡" },
-  { key: "trainer", label: "Pattern Trainer", emoji: "🎯" },
-  { key: "review", label: "Review", emoji: "🔁" },
-  { key: "kit", label: "Interview Kit", emoji: "🧭" },
-  { key: "cheatsheet", label: "Cheat Sheet", emoji: "📋" },
-  { key: "prep", label: "Company Prep", emoji: "🎯" },
+const TABS: { key: Tab; label: string; Icon: LucideIcon }[] = [
+  { key: "ds", label: "Data Structures", Icon: Boxes },
+  { key: "algo", label: "Algorithms", Icon: Workflow },
+  { key: "trainer", label: "Pattern Trainer", Icon: Crosshair },
+  { key: "review", label: "Review", Icon: RotateCcw },
+  { key: "kit", label: "Interview Kit", Icon: Compass },
+  { key: "cheatsheet", label: "Cheat Sheet", Icon: FileText },
+  { key: "prep", label: "Company Prep", Icon: Building2 },
 ];
 
 export default function Sidebar({
@@ -49,18 +65,22 @@ export default function Sidebar({
   return (
     <aside className={`sidebar ${open ? "open" : ""}`}>
       <div className="brand">
-        <div className="brand-mark">PC</div>
+        <div className="brand-mark">
+          <GraduationCap size={20} strokeWidth={2} />
+        </div>
         <div className="brand-text">
           <div className="brand-title">Prep Coach</div>
           <div className="brand-sub">Interactive Interview Prep</div>
         </div>
         <button className="sidebar-close" onClick={onClose} aria-label="Close menu">
-          ✕
+          <X size={18} />
         </button>
       </div>
 
       <div className="search-wrap">
-        <span className="search-icon">🔍</span>
+        <span className="search-icon">
+          <Search size={15} />
+        </span>
         <input
           ref={searchRef}
           type="text"
@@ -83,13 +103,16 @@ export default function Sidebar({
             aria-selected={tab === t.key}
             onClick={() => onTab(t.key)}
           >
-            <span>{t.emoji}</span> {t.label}
+            <t.Icon size={17} strokeWidth={1.9} /> {t.label}
             {t.key === "review" && reviewDue > 0 && <span className="due-badge">{reviewDue}</span>}
           </button>
         ))}
         {/* Separate app, deployed alongside this one at /ai-lab/ (see scripts/build-ai-lab.mjs). */}
         <a className="cat-btn cat-link" href="ai-lab/">
-          <span>🤖</span> AI Features Lab <span className="cat-link-arrow">↗</span>
+          <Sparkles size={17} strokeWidth={1.9} /> AI Lab
+          <span className="cat-link-arrow">
+            <ArrowUpRight size={15} />
+          </span>
         </a>
       </div>
 
@@ -103,8 +126,12 @@ export default function Sidebar({
                 className={`topic-btn ${t.key === topicKey ? "active" : ""}`}
                 onClick={() => onTopic(t.key)}
               >
-                {t.emoji} {t.title}
-                {learnedSet.has(`${t.cat}:${t.key}`) && <span className="topic-check">✓</span>}
+                {t.title}
+                {learnedSet.has(`${t.cat}:${t.key}`) && (
+                  <span className="topic-check">
+                    <Check size={14} strokeWidth={2.5} />
+                  </span>
+                )}
               </button>
             ))}
           </nav>

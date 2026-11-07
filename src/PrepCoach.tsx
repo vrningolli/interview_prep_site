@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, Menu, Moon, Sun } from "lucide-react";
 import rawContent from "./data/content.json";
 import { Content, Tab, Topic } from "./types";
 import { useLocalStorage, useStoredSet } from "./state";
@@ -113,7 +114,7 @@ export default function PrepCoach() {
       <div className="main" ref={mainRef}>
         <header className="topbar">
           <button className="menu-toggle" onClick={() => setDrawerOpen(true)} aria-label="Open menu">
-            ☰
+            <Menu size={20} />
           </button>
           <div className="topbar-center">
             <span className="crumb-cat">{TAB_NAMES[tab]}</span>
@@ -121,7 +122,7 @@ export default function PrepCoach() {
               <>
                 <span className="crumb-sep">›</span>
                 <span className="crumb-topic">
-                  {topic.emoji} {topic.title}
+                  {topic.title}
                 </span>
               </>
             )}
@@ -130,10 +131,10 @@ export default function PrepCoach() {
             {(tab === "ds" || tab === "algo") && (
               <>
                 <button className="icon-btn" onClick={() => move(-1)} title="Previous topic (Alt+←)" aria-label="Previous topic">
-                  ‹
+                  <ChevronLeft size={17} />
                 </button>
                 <button className="icon-btn" onClick={() => move(1)} title="Next topic (Alt+→)" aria-label="Next topic">
-                  ›
+                  <ChevronRight size={17} />
                 </button>
               </>
             )}
@@ -143,7 +144,7 @@ export default function PrepCoach() {
               title="Toggle theme (D)"
               aria-label="Toggle theme"
             >
-              {theme === "dark" ? "☀️" : "🌙"}
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
             </button>
           </div>
         </header>
