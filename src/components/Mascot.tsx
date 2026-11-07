@@ -1,27 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * "Byte" — Prep Hub's mascot. On the first landing-page visit of a session it
- * rises from the bottom of the screen, waves, throws confetti, says hello and
- * glides away (~4.3 s). Purely decorative: aria-hidden, never blocks clicks,
- * skipped entirely when the visitor prefers reduced motion.
+ * "Chirp" — Prep Hub's mascot, an original 3D-styled bluebird. Every time the
+ * landing page appears it rises from the bottom of the screen, flaps, throws
+ * confetti (twice), says hello and flies back down (~7.2 s). Purely
+ * decorative: aria-hidden, never blocks clicks, and skipped when the visitor
+ * prefers reduced motion (an accessibility setting).
  */
 
-const SESSION_KEY = "prephub.mascot.shown";
-const TOTAL_MS = 4300; // must match the .mascot animation timings in site.css
-const CONFETTI_AT_MS = 750;
-const COLORS = ["#4f46e5", "#7c3aed", "#0ea5e9", "#10b981", "#f59e0b", "#ec4899", "#a5b4fc"];
+const TOTAL_MS = 7200; // must match the .mascot exit timing in site.css (6.5s delay + 0.7s)
+const BURSTS_MS = [850, 3600];
+const COLORS = ["#4f46e5", "#7c3aed", "#0ea5e9", "#38bdf8", "#10b981", "#f59e0b", "#ec4899", "#a5b4fc"];
 
-function shouldShow(): boolean {
-  try {
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return false;
-    if (sessionStorage.getItem(SESSION_KEY)) return false;
-    sessionStorage.setItem(SESSION_KEY, "1");
-  } catch {
-    /* storage blocked — still show once for this page view */
-  }
-  return true;
-}
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 interface Particle {
   x: number; y: number; vx: number; vy: number;
@@ -29,8 +21,8 @@ interface Particle {
   color: string; round: boolean; flutter: number; fs: number;
 }
 
-/** Canvas confetti burst from (x, y): gravity, air drag, spin and flutter, then fade. */
-function burst(canvas: HTMLCanvasElement, x: number, y: number): () => void {
+/** Canvas confetti from (x, y): gravity, air drag, spin and paper-like flutter, then fade. */
+function burst(canvas: HTMLCanvasElement, x: number, y: number, scale = 1): () => void {
   const ctx = canvas.getContext("2d");
   if (!ctx) return () => {};
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -41,10 +33,10 @@ function burst(canvas: HTMLCanvasElement, x: number, y: number): () => void {
   };
   resize();
 
-  const count = window.innerWidth < 640 ? 110 : 170;
+  const count = Math.round((window.innerWidth < 640 ? 110 : 170) * scale);
   const parts: Particle[] = Array.from({ length: count }, () => {
     const angle = -Math.PI / 2 + (Math.random() - 0.5) * (Math.PI * 0.95);
-    const speed = 7 + Math.random() * 11;
+    const speed = (7 + Math.random() * 11) * (0.85 + scale * 0.15);
     const round = Math.random() < 0.22;
     const size = 5 + Math.random() * 6;
     return {
@@ -63,15 +55,15 @@ function burst(canvas: HTMLCanvasElement, x: number, y: number): () => void {
   });
 
   const start = performance.now();
-  const LIFE = 3200;
+  const LIFE = 3400;
   let raf = 0;
   const frame = (now: number) => {
     const t = now - start;
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     const fade = t > LIFE - 900 ? Math.max(0, (LIFE - t) / 900) : 1;
     for (const p of parts) {
-      p.vy += 0.32;            // gravity
-      p.vx *= 0.985;           // air drag
+      p.vy += 0.32;
+      p.vx *= 0.985;
       p.vy *= 0.985;
       p.flutter += p.fs;
       p.x += p.vx + Math.sin(p.flutter) * 0.6;
@@ -81,7 +73,7 @@ function burst(canvas: HTMLCanvasElement, x: number, y: number): () => void {
       ctx.globalAlpha = fade;
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rot);
-      ctx.scale(1, Math.cos(p.flutter)); // paper-like tumbling
+      ctx.scale(1, Math.cos(p.flutter));
       ctx.fillStyle = p.color;
       if (p.round) {
         ctx.beginPath();
@@ -103,120 +95,158 @@ function burst(canvas: HTMLCanvasElement, x: number, y: number): () => void {
   };
 }
 
-/** The robot itself — layered gradients, glossy visor, glowing eyes. */
-function ByteSvg() {
+/**
+ * The bird. 3D look from layered gradients: a key light from the top-left
+ * (radial body gradient + soft specular bloom), a cool rim light on the right,
+ * occlusion shadows under the wing and head, glossy eyes and a shaded beak.
+ */
+function ChirpSvg() {
   return (
-    <svg className="byte" viewBox="0 0 200 230" aria-hidden="true">
+    <svg className="chirp" viewBox="0 0 240 230" aria-hidden="true">
       <defs>
-        <linearGradient id="byte-shell" x1="0" y1="0" x2="0" y2="1">
+        <radialGradient id="ch-body" cx="0.36" cy="0.3" r="0.78">
+          <stop offset="0" stopColor="#bae6fd" />
+          <stop offset="0.22" stopColor="#38bdf8" />
+          <stop offset="0.6" stopColor="#2563eb" />
+          <stop offset="1" stopColor="#1e2a78" />
+        </radialGradient>
+        <radialGradient id="ch-belly" cx="0.45" cy="0.3" r="0.75">
           <stop offset="0" stopColor="#ffffff" />
-          <stop offset="1" stopColor="#dfe3fb" />
-        </linearGradient>
-        <linearGradient id="byte-shell-side" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#c7cdf6" stopOpacity="0.55" />
-          <stop offset="0.25" stopColor="#ffffff" stopOpacity="0" />
-          <stop offset="0.8" stopColor="#ffffff" stopOpacity="0" />
-          <stop offset="1" stopColor="#b9c0f2" stopOpacity="0.6" />
-        </linearGradient>
-        <linearGradient id="byte-visor" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#312e81" />
-          <stop offset="1" stopColor="#0f0b2e" />
-        </linearGradient>
-        <linearGradient id="byte-accent" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#6366f1" />
-          <stop offset="1" stopColor="#7c3aed" />
-        </linearGradient>
-        <radialGradient id="byte-eye" cx="0.5" cy="0.45" r="0.6">
-          <stop offset="0" stopColor="#ecfeff" />
-          <stop offset="0.45" stopColor="#67e8f9" />
-          <stop offset="1" stopColor="#0891b2" />
+          <stop offset="0.55" stopColor="#e0f2fe" />
+          <stop offset="1" stopColor="#93c5fd" />
         </radialGradient>
-        <radialGradient id="byte-glow" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor="#c4b5fd" stopOpacity="0.9" />
-          <stop offset="1" stopColor="#c4b5fd" stopOpacity="0" />
+        <linearGradient id="ch-wing" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#60a5fa" />
+          <stop offset="0.55" stopColor="#2563eb" />
+          <stop offset="1" stopColor="#1e3a8a" />
+        </linearGradient>
+        <linearGradient id="ch-tail" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#3b82f6" />
+          <stop offset="1" stopColor="#1e2a78" />
+        </linearGradient>
+        <linearGradient id="ch-beak" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fde68a" />
+          <stop offset="0.45" stopColor="#fbbf24" />
+          <stop offset="1" stopColor="#ea580c" />
+        </linearGradient>
+        <radialGradient id="ch-eye" cx="0.4" cy="0.35" r="0.7">
+          <stop offset="0" stopColor="#ffffff" />
+          <stop offset="0.75" stopColor="#f1f5f9" />
+          <stop offset="1" stopColor="#cbd5e1" />
         </radialGradient>
-        <filter id="byte-soft" x="-30%" y="-30%" width="160%" height="160%">
-          <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="#312e81" floodOpacity="0.18" />
+        <radialGradient id="ch-pupil" cx="0.4" cy="0.35" r="0.65">
+          <stop offset="0" stopColor="#334155" />
+          <stop offset="1" stopColor="#020617" />
+        </radialGradient>
+        <radialGradient id="ch-spec" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.95" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="ch-shadow" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="#1e1b4b" stopOpacity="0.35" />
+          <stop offset="1" stopColor="#1e1b4b" stopOpacity="0" />
+        </radialGradient>
+        <filter id="ch-drop" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="8" stdDeviation="7" floodColor="#1e3a8a" floodOpacity="0.25" />
         </filter>
+        <filter id="ch-blur" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3" />
+        </filter>
+        <clipPath id="ch-body-clip">
+          <ellipse cx="118" cy="122" rx="70" ry="68" />
+        </clipPath>
       </defs>
 
-      {/* ground shadow */}
-      <ellipse cx="100" cy="222" rx="54" ry="7" fill="#312e81" opacity="0.14" />
+      {/* contact shadow */}
+      <ellipse cx="118" cy="214" rx="62" ry="9" fill="url(#ch-shadow)" />
 
-      <g filter="url(#byte-soft)">
-        {/* left arm (resting) */}
-        <g className="byte-arm-left">
-          <rect x="34" y="138" width="20" height="46" rx="10" fill="url(#byte-shell)" stroke="#c7cdf6" />
-          <circle cx="44" cy="186" r="9" fill="url(#byte-accent)" />
+      <g className="chirp-bob" filter="url(#ch-drop)">
+        {/* tail feathers */}
+        <g className="chirp-tail">
+          <path d="M 62 150 Q 22 150 8 128 Q 34 132 58 136 Z" fill="url(#ch-tail)" />
+          <path d="M 60 140 Q 24 128 16 104 Q 40 116 62 126 Z" fill="url(#ch-tail)" opacity="0.92" />
         </g>
 
-        {/* body */}
-        <rect x="52" y="128" width="96" height="78" rx="26" fill="url(#byte-shell)" stroke="#c7cdf6" />
-        <rect x="52" y="128" width="96" height="78" rx="26" fill="url(#byte-shell-side)" />
-        {/* chest panel */}
-        <rect x="74" y="146" width="52" height="34" rx="11" fill="url(#byte-visor)" />
-        <circle className="byte-core" cx="100" cy="163" r="7" fill="#a78bfa" />
-        <circle cx="100" cy="163" r="13" fill="url(#byte-glow)" />
-        <rect x="82" y="186" width="36" height="5" rx="2.5" fill="#c7cdf6" />
+        {/* feet */}
+        <path d="M 100 186 l -6 16 M 100 186 l 0 17 M 100 186 l 6 16" stroke="#f59e0b" strokeWidth="5" strokeLinecap="round" />
+        <path d="M 134 186 l -6 16 M 134 186 l 0 17 M 134 186 l 6 16" stroke="#f59e0b" strokeWidth="5" strokeLinecap="round" />
 
-        {/* neck */}
-        <rect x="88" y="118" width="24" height="14" rx="5" fill="#c7cdf6" />
+        <g className="chirp-head">
+          {/* body + head (one round form) */}
+          <ellipse cx="118" cy="122" rx="70" ry="68" fill="url(#ch-body)" />
+          <g clipPath="url(#ch-body-clip)">
+            {/* belly */}
+            <ellipse cx="132" cy="160" rx="46" ry="42" fill="url(#ch-belly)" />
+            {/* occlusion under the head / around the belly */}
+            <ellipse cx="96" cy="196" rx="70" ry="22" fill="#0b1550" opacity="0.22" filter="url(#ch-blur)" />
+            {/* rim light on the right edge */}
+            <ellipse cx="190" cy="118" rx="16" ry="60" fill="#a5f3fc" opacity="0.28" filter="url(#ch-blur)" />
+          </g>
 
-        {/* waving arm (raised) */}
-        <g className="byte-arm-wave">
-          <rect x="146" y="98" width="20" height="50" rx="10" fill="url(#byte-shell)" stroke="#c7cdf6" />
-          <circle cx="156" cy="96" r="10" fill="url(#byte-accent)" />
+          {/* crest */}
+          <path d="M 104 58 Q 98 30 116 22 Q 112 40 122 56 Z" fill="url(#ch-wing)" />
+          <path d="M 120 56 Q 124 32 142 30 Q 132 44 134 60 Z" fill="url(#ch-body)" />
+
+          {/* specular bloom (key light, top-left) */}
+          <ellipse cx="88" cy="84" rx="26" ry="16" fill="url(#ch-spec)" opacity="0.55" transform="rotate(-25 88 84)" />
+
+          {/* cheeks */}
+          <ellipse cx="90" cy="132" rx="11" ry="6" fill="#f472b6" opacity="0.35" />
+          <ellipse cx="168" cy="132" rx="9" ry="5" fill="#f472b6" opacity="0.3" />
+
+          {/* eyes */}
+          <g className="chirp-eyes">
+            <ellipse cx="104" cy="108" rx="17" ry="20" fill="url(#ch-eye)" />
+            <ellipse cx="152" cy="108" rx="14" ry="17" fill="url(#ch-eye)" />
+            <circle cx="109" cy="111" r="10" fill="url(#ch-pupil)" />
+            <circle cx="155" cy="111" r="8.5" fill="url(#ch-pupil)" />
+            <circle cx="113" cy="106" r="3.6" fill="#ffffff" />
+            <circle cx="106" cy="116" r="1.6" fill="#ffffff" opacity="0.8" />
+            <circle cx="158" cy="106" r="3" fill="#ffffff" />
+          </g>
+
+          {/* beak */}
+          <path d="M 120 124 Q 132 116 152 124 Q 140 136 128 134 Z" fill="url(#ch-beak)" />
+          <path d="M 124 132 Q 136 140 146 128 Q 140 144 128 140 Z" fill="#c2410c" />
+          <path d="M 126 123 Q 134 119 144 122" stroke="#fff7ed" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.8" />
         </g>
 
-        {/* antenna */}
-        <rect x="97" y="18" width="6" height="22" rx="3" fill="#a5b4fc" />
-        <circle cx="100" cy="16" r="14" fill="url(#byte-glow)" className="byte-antenna-glow" />
-        <circle cx="100" cy="16" r="7" fill="url(#byte-accent)" />
+        {/* far wing (resting) */}
+        <path d="M 66 116 Q 40 140 52 172 Q 72 160 84 136 Z" fill="url(#ch-wing)" opacity="0.9" />
 
-        {/* ears */}
-        <rect x="26" y="68" width="16" height="36" rx="8" fill="url(#byte-accent)" />
-        <rect x="158" y="68" width="16" height="36" rx="8" fill="url(#byte-accent)" />
-
-        {/* head */}
-        <rect x="36" y="36" width="128" height="92" rx="34" fill="url(#byte-shell)" stroke="#c7cdf6" />
-        <rect x="36" y="36" width="128" height="92" rx="34" fill="url(#byte-shell-side)" />
-        {/* visor */}
-        <rect x="52" y="54" width="96" height="56" rx="24" fill="url(#byte-visor)" />
-        {/* eyes */}
-        <g className="byte-eyes">
-          <rect x="72" y="70" width="16" height="22" rx="8" fill="url(#byte-eye)" />
-          <rect x="112" y="70" width="16" height="22" rx="8" fill="url(#byte-eye)" />
+        {/* near wing (flapping / waving) */}
+        <g className="chirp-wing">
+          <path d="M 176 118 Q 214 92 226 52 Q 230 92 206 126 Q 194 142 178 142 Z" fill="url(#ch-wing)" />
+          <path d="M 196 104 Q 212 86 220 66" stroke="#93c5fd" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.7" />
+          <path d="M 188 120 Q 206 106 214 90" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.5" />
         </g>
-        {/* smile */}
-        <path d="M 90 99 Q 100 106 110 99" fill="none" stroke="#67e8f9" strokeWidth="3" strokeLinecap="round" opacity="0.85" />
-        {/* visor gloss */}
-        <path d="M 62 64 Q 80 56 104 57" fill="none" stroke="#ffffff" strokeWidth="4" strokeLinecap="round" opacity="0.22" />
-        {/* head highlight */}
-        <ellipse cx="72" cy="46" rx="20" ry="5" fill="#ffffff" opacity="0.9" />
       </g>
     </svg>
   );
 }
 
 export default function Mascot() {
-  const [show] = useState(shouldShow);
+  // Plays every time the landing page mounts (including reloads).
+  const [show] = useState(() => !prefersReducedMotion());
   const [gone, setGone] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const handRef = useRef<HTMLDivElement>(null);
+  const originRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!show) return;
-    let stop = () => {};
-    const confetti = window.setTimeout(() => {
-      const c = canvasRef.current;
-      const hand = handRef.current?.getBoundingClientRect();
-      if (c && hand) stop = burst(c, hand.left + hand.width / 2, hand.top + hand.height / 2);
-    }, CONFETTI_AT_MS);
-    const end = window.setTimeout(() => setGone(true), TOTAL_MS + 400);
+    const stops: (() => void)[] = [];
+    const timers = BURSTS_MS.map((at, i) =>
+      window.setTimeout(() => {
+        const c = canvasRef.current;
+        const o = originRef.current?.getBoundingClientRect();
+        if (c && o) stops.push(burst(c, o.left + o.width / 2, o.top + o.height / 2, i === 0 ? 1 : 0.6));
+      }, at)
+    );
+    const end = window.setTimeout(() => setGone(true), TOTAL_MS + 300);
     return () => {
-      window.clearTimeout(confetti);
+      timers.forEach((t) => window.clearTimeout(t));
       window.clearTimeout(end);
-      stop();
+      stops.forEach((s) => s());
     };
   }, [show]);
 
@@ -230,9 +260,9 @@ export default function Mascot() {
           <span>Let's crack that interview.</span>
         </div>
         <div className="mascot-figure">
-          <ByteSvg />
-          {/* invisible marker over the waving hand: the confetti origin */}
-          <div ref={handRef} className="mascot-hand" />
+          <ChirpSvg />
+          {/* invisible marker at the wing tip: the confetti origin */}
+          <div ref={originRef} className="mascot-hand" />
         </div>
       </div>
     </div>
