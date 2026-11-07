@@ -126,6 +126,7 @@ export default function App() {
             )}
           </div>
           <div className="topbar-actions">
+            <span className="made-by">made with <span className="heart" aria-label="love">♥</span> · Virupaksh N</span>
             {(tab === "ds" || tab === "algo") && (
               <>
                 <button className="icon-btn" onClick={() => move(-1)} title="Previous topic (Alt+←)" aria-label="Previous topic">
