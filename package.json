@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "extract": "node scripts/extract-content.mjs"
+    "extract": "node scripts/extract-content.mjs",
+    "build:ai-lab": "node scripts/build-ai-lab.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

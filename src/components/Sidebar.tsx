@@ -87,6 +87,10 @@ export default function Sidebar({
             {t.key === "review" && reviewDue > 0 && <span className="due-badge">{reviewDue}</span>}
           </button>
         ))}
+        {/* Separate app, deployed alongside this one at /ai-lab/ (see scripts/build-ai-lab.mjs). */}
+        <a className="cat-btn cat-link" href="ai-lab/">
+          <span>🤖</span> AI Features Lab <span className="cat-link-arrow">↗</span>
+        </a>
       </div>
 
       {listTopics.length > 0 && (

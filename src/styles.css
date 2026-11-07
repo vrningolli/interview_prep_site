@@ -133,6 +133,8 @@ code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; }
   cursor: pointer; text-align: left; transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 .cat-btn:hover { background: var(--primary-soft); transform: translateX(2px); }
+.cat-link { text-decoration: none; margin-top: 0.35rem; border-top: 1px dashed var(--border); border-radius: 0 0 12px 12px; padding-top: 0.75rem; }
+.cat-link-arrow { margin-left: auto; color: var(--muted); font-size: 0.8rem; }
 .cat-btn.active {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: #fff;
