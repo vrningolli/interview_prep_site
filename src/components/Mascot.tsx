@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * "Chirp" — Prep Hub's mascot, an original 3D-styled bluebird. Every time the
+ * "Chirp" — Prep Hub's mascot, an original 3D cartoon bluebird. Every time the
  * landing page appears it rises from the bottom of the screen, flaps, throws
  * confetti (twice), says hello and flies back down (~7.2 s). Purely
  * decorative: aria-hidden, never blocks clicks, and skipped when the visitor
@@ -96,129 +96,192 @@ function burst(canvas: HTMLCanvasElement, x: number, y: number, scale = 1): () =
 }
 
 /**
- * The bird. 3D look from layered gradients: a key light from the top-left
- * (radial body gradient + soft specular bloom), a cool rim light on the right,
- * occlusion shadows under the wing and head, glossy eyes and a shaded beak.
+ * The bird — a Pixar-style 3D cartoon look built from layered lighting:
+ * key light (top-left) with a hard specular + soft bloom, cyan rim light on
+ * the right, warm bounce light underneath, ambient occlusion where the form
+ * turns away, cast shadows from the head/wing/beak, and glossy layered eyes.
  */
 function ChirpSvg() {
   return (
-    <svg className="chirp" viewBox="0 0 240 230" aria-hidden="true">
+    <svg className="chirp" viewBox="0 0 260 252" aria-hidden="true">
       <defs>
-        <radialGradient id="ch-body" cx="0.36" cy="0.3" r="0.78">
-          <stop offset="0" stopColor="#bae6fd" />
-          <stop offset="0.22" stopColor="#38bdf8" />
-          <stop offset="0.6" stopColor="#2563eb" />
-          <stop offset="1" stopColor="#1e2a78" />
+        {/* body: sphere shading */}
+        <radialGradient id="cb-body" cx="0.34" cy="0.27" r="0.82">
+          <stop offset="0" stopColor="#b9ecff" />
+          <stop offset="0.18" stopColor="#4cc3ff" />
+          <stop offset="0.48" stopColor="#1d8ff2" />
+          <stop offset="0.8" stopColor="#1554cc" />
+          <stop offset="1" stopColor="#0b2a7a" />
         </radialGradient>
-        <radialGradient id="ch-belly" cx="0.45" cy="0.3" r="0.75">
+        <radialGradient id="cb-belly" cx="0.42" cy="0.28" r="0.8">
           <stop offset="0" stopColor="#ffffff" />
-          <stop offset="0.55" stopColor="#e0f2fe" />
-          <stop offset="1" stopColor="#93c5fd" />
+          <stop offset="0.5" stopColor="#eef8ff" />
+          <stop offset="0.85" stopColor="#c4e2ff" />
+          <stop offset="1" stopColor="#8fc2f7" />
         </radialGradient>
-        <linearGradient id="ch-wing" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#60a5fa" />
-          <stop offset="0.55" stopColor="#2563eb" />
-          <stop offset="1" stopColor="#1e3a8a" />
+        <linearGradient id="cb-feather" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stopColor="#0f2f8f" />
+          <stop offset="0.55" stopColor="#1f6fe5" />
+          <stop offset="1" stopColor="#6cc8ff" />
         </linearGradient>
-        <linearGradient id="ch-tail" x1="1" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#3b82f6" />
-          <stop offset="1" stopColor="#1e2a78" />
+        <linearGradient id="cb-feather-dark" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#2a6fe0" />
+          <stop offset="1" stopColor="#0a2167" />
         </linearGradient>
-        <linearGradient id="ch-beak" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fde68a" />
-          <stop offset="0.45" stopColor="#fbbf24" />
-          <stop offset="1" stopColor="#ea580c" />
+        <linearGradient id="cb-crest" x1="0" y1="1" x2="0.3" y2="0">
+          <stop offset="0" stopColor="#1554cc" />
+          <stop offset="0.6" stopColor="#2f9bff" />
+          <stop offset="1" stopColor="#9be3ff" />
         </linearGradient>
-        <radialGradient id="ch-eye" cx="0.4" cy="0.35" r="0.7">
-          <stop offset="0" stopColor="#ffffff" />
-          <stop offset="0.75" stopColor="#f1f5f9" />
-          <stop offset="1" stopColor="#cbd5e1" />
+        <linearGradient id="cb-beak" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffe08a" />
+          <stop offset="0.45" stopColor="#ffab2e" />
+          <stop offset="1" stopColor="#e2560c" />
+        </linearGradient>
+        <linearGradient id="cb-eye" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#dbe4f0" />
+          <stop offset="0.22" stopColor="#ffffff" />
+          <stop offset="1" stopColor="#eef2f8" />
+        </linearGradient>
+        <radialGradient id="cb-iris" cx="0.45" cy="0.62" r="0.62">
+          <stop offset="0" stopColor="#5ab0ff" />
+          <stop offset="0.5" stopColor="#1d4fbf" />
+          <stop offset="1" stopColor="#0a1745" />
         </radialGradient>
-        <radialGradient id="ch-pupil" cx="0.4" cy="0.35" r="0.65">
-          <stop offset="0" stopColor="#334155" />
-          <stop offset="1" stopColor="#020617" />
+        <linearGradient id="cb-foot" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffc24d" />
+          <stop offset="1" stopColor="#e96a0c" />
+        </linearGradient>
+        <radialGradient id="cb-cheek" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="#ff7aa8" stopOpacity="0.75" />
+          <stop offset="1" stopColor="#ff7aa8" stopOpacity="0" />
         </radialGradient>
-        <radialGradient id="ch-spec" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor="#ffffff" stopOpacity="0.95" />
-          <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+        <radialGradient id="cb-ground" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="#0f1d5c" stopOpacity="0.4" />
+          <stop offset="0.6" stopColor="#0f1d5c" stopOpacity="0.12" />
+          <stop offset="1" stopColor="#0f1d5c" stopOpacity="0" />
         </radialGradient>
-        <radialGradient id="ch-shadow" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0" stopColor="#1e1b4b" stopOpacity="0.35" />
-          <stop offset="1" stopColor="#1e1b4b" stopOpacity="0" />
-        </radialGradient>
-        <filter id="ch-drop" x="-30%" y="-30%" width="160%" height="160%">
-          <feDropShadow dx="0" dy="8" stdDeviation="7" floodColor="#1e3a8a" floodOpacity="0.25" />
+        <filter id="cb-b2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" /></filter>
+        <filter id="cb-b5" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" /></filter>
+        <filter id="cb-b10" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="10" /></filter>
+        <filter id="cb-drop" x="-30%" y="-30%" width="160%" height="170%">
+          <feDropShadow dx="0" dy="10" stdDeviation="9" floodColor="#0b2a7a" floodOpacity="0.28" />
         </filter>
-        <filter id="ch-blur" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="3" />
-        </filter>
-        <clipPath id="ch-body-clip">
-          <ellipse cx="118" cy="122" rx="70" ry="68" />
-        </clipPath>
+        <clipPath id="cb-clip-body"><circle cx="130" cy="145" r="78" /></clipPath>
+        <clipPath id="cb-clip-eye-l"><ellipse cx="108" cy="120" rx="22" ry="26" /></clipPath>
+        <clipPath id="cb-clip-eye-r"><ellipse cx="155" cy="120" rx="20" ry="24" /></clipPath>
       </defs>
 
-      {/* contact shadow */}
-      <ellipse cx="118" cy="214" rx="62" ry="9" fill="url(#ch-shadow)" />
+      {/* ground contact shadow */}
+      <ellipse className="chirp-ground" cx="132" cy="240" rx="70" ry="10" fill="url(#cb-ground)" />
 
-      <g className="chirp-bob" filter="url(#ch-drop)">
-        {/* tail feathers */}
-        <g className="chirp-tail">
-          <path d="M 62 150 Q 22 150 8 128 Q 34 132 58 136 Z" fill="url(#ch-tail)" />
-          <path d="M 60 140 Q 24 128 16 104 Q 40 116 62 126 Z" fill="url(#ch-tail)" opacity="0.92" />
-        </g>
-
-        {/* feet */}
-        <path d="M 100 186 l -6 16 M 100 186 l 0 17 M 100 186 l 6 16" stroke="#f59e0b" strokeWidth="5" strokeLinecap="round" />
-        <path d="M 134 186 l -6 16 M 134 186 l 0 17 M 134 186 l 6 16" stroke="#f59e0b" strokeWidth="5" strokeLinecap="round" />
-
-        <g className="chirp-head">
-          {/* body + head (one round form) */}
-          <ellipse cx="118" cy="122" rx="70" ry="68" fill="url(#ch-body)" />
-          <g clipPath="url(#ch-body-clip)">
-            {/* belly */}
-            <ellipse cx="132" cy="160" rx="46" ry="42" fill="url(#ch-belly)" />
-            {/* occlusion under the head / around the belly */}
-            <ellipse cx="96" cy="196" rx="70" ry="22" fill="#0b1550" opacity="0.22" filter="url(#ch-blur)" />
-            {/* rim light on the right edge */}
-            <ellipse cx="190" cy="118" rx="16" ry="60" fill="#a5f3fc" opacity="0.28" filter="url(#ch-blur)" />
+      <g className="chirp-squash">
+        <g className="chirp-bob" filter="url(#cb-drop)">
+          {/* tail — layered feathers */}
+          <g className="chirp-tail">
+            <path d="M 72 194 Q 42 216 24 212 Q 44 196 66 182 Z" fill="url(#cb-feather-dark)" />
+            <path d="M 68 182 Q 30 196 12 186 Q 36 174 62 168 Z" fill="url(#cb-feather)" />
+            <path d="M 66 170 Q 26 168 12 150 Q 40 154 64 158 Z" fill="url(#cb-feather-dark)" />
+            <path d="M 62 176 Q 38 182 22 184" stroke="#9be3ff" strokeWidth="1.6" strokeLinecap="round" fill="none" opacity="0.55" />
           </g>
 
-          {/* crest */}
-          <path d="M 104 58 Q 98 30 116 22 Q 112 40 122 56 Z" fill="url(#ch-wing)" />
-          <path d="M 120 56 Q 124 32 142 30 Q 132 44 134 60 Z" fill="url(#ch-body)" />
-
-          {/* specular bloom (key light, top-left) */}
-          <ellipse cx="88" cy="84" rx="26" ry="16" fill="url(#ch-spec)" opacity="0.55" transform="rotate(-25 88 84)" />
-
-          {/* cheeks */}
-          <ellipse cx="90" cy="132" rx="11" ry="6" fill="#f472b6" opacity="0.35" />
-          <ellipse cx="168" cy="132" rx="9" ry="5" fill="#f472b6" opacity="0.3" />
-
-          {/* eyes */}
-          <g className="chirp-eyes">
-            <ellipse cx="104" cy="108" rx="17" ry="20" fill="url(#ch-eye)" />
-            <ellipse cx="152" cy="108" rx="14" ry="17" fill="url(#ch-eye)" />
-            <circle cx="109" cy="111" r="10" fill="url(#ch-pupil)" />
-            <circle cx="155" cy="111" r="8.5" fill="url(#ch-pupil)" />
-            <circle cx="113" cy="106" r="3.6" fill="#ffffff" />
-            <circle cx="106" cy="116" r="1.6" fill="#ffffff" opacity="0.8" />
-            <circle cx="158" cy="106" r="3" fill="#ffffff" />
+          {/* feet */}
+          <g>
+            <path d="M 112 214 q -8 14 -12 22 M 112 214 q 0 14 0 24 M 112 214 q 8 14 12 22" stroke="url(#cb-foot)" strokeWidth="7" strokeLinecap="round" fill="none" />
+            <path d="M 150 214 q -8 14 -12 22 M 150 214 q 0 14 0 24 M 150 214 q 8 14 12 22" stroke="url(#cb-foot)" strokeWidth="7" strokeLinecap="round" fill="none" />
+            <path d="M 110 220 q -3 6 -6 11 M 148 220 q -3 6 -6 11" stroke="#ffe3a3" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.8" />
           </g>
 
-          {/* beak */}
-          <path d="M 120 124 Q 132 116 152 124 Q 140 136 128 134 Z" fill="url(#ch-beak)" />
-          <path d="M 124 132 Q 136 140 146 128 Q 140 144 128 140 Z" fill="#c2410c" />
-          <path d="M 126 123 Q 134 119 144 122" stroke="#fff7ed" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.8" />
-        </g>
+          {/* far wing (folded) */}
+          <path d="M 70 128 Q 38 150 46 190 Q 62 198 80 178 Q 90 156 84 134 Z" fill="url(#cb-feather-dark)" />
+          <path d="M 60 150 Q 54 168 58 184 M 70 146 Q 66 164 70 178" stroke="#7cc4ff" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.4" />
 
-        {/* far wing (resting) */}
-        <path d="M 66 116 Q 40 140 52 172 Q 72 160 84 136 Z" fill="url(#ch-wing)" opacity="0.9" />
+          <g className="chirp-head">
+            {/* body sphere */}
+            <circle cx="130" cy="145" r="78" fill="url(#cb-body)" />
 
-        {/* near wing (flapping / waving) */}
-        <g className="chirp-wing">
-          <path d="M 176 118 Q 214 92 226 52 Q 230 92 206 126 Q 194 142 178 142 Z" fill="url(#ch-wing)" />
-          <path d="M 196 104 Q 212 86 220 66" stroke="#93c5fd" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.7" />
-          <path d="M 188 120 Q 206 106 214 90" stroke="#93c5fd" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.5" />
+            <g clipPath="url(#cb-clip-body)">
+              {/* belly */}
+              <ellipse cx="142" cy="178" rx="54" ry="48" fill="url(#cb-belly)" />
+              {/* chest feather texture */}
+              <path d="M 116 182 q 7 5 14 0 M 136 188 q 7 5 14 0 M 156 182 q 7 5 14 0 M 126 200 q 7 5 14 0 M 146 204 q 7 5 14 0" stroke="#a9d2f7" strokeWidth="1.4" strokeLinecap="round" fill="none" opacity="0.45" />
+              {/* head cast-shadow onto belly */}
+              <ellipse cx="142" cy="132" rx="58" ry="9" fill="#0b2a7a" opacity="0.08" filter="url(#cb-b5)" />
+              {/* ambient occlusion at the bottom */}
+              <ellipse cx="128" cy="252" rx="96" ry="40" fill="#061a55" opacity="0.38" filter="url(#cb-b10)" />
+              {/* warm bounce light from the ground */}
+              <ellipse cx="160" cy="214" rx="34" ry="11" fill="#ffd9a8" opacity="0.35" filter="url(#cb-b5)" />
+              {/* cyan rim light */}
+              <ellipse cx="214" cy="138" rx="13" ry="66" fill="#c4f5ff" opacity="0.6" filter="url(#cb-b5)" />
+              {/* eye sockets */}
+              <ellipse cx="132" cy="120" rx="56" ry="30" fill="#0b3a9e" opacity="0.12" filter="url(#cb-b5)" />
+              {/* wing cast-shadow on the body */}
+              <ellipse cx="196" cy="166" rx="22" ry="12" fill="#06205f" opacity="0.35" filter="url(#cb-b5)" />
+            </g>
+
+            {/* crest */}
+            <g className="chirp-crest">
+              <path d="M 118 76 Q 100 46 116 26 Q 120 52 134 72 Z" fill="url(#cb-crest)" />
+              <path d="M 128 72 Q 128 34 154 22 Q 142 48 144 74 Z" fill="url(#cb-crest)" />
+              <path d="M 142 78 Q 158 52 180 50 Q 164 64 152 84 Z" fill="url(#cb-crest)" />
+              <path d="M 134 66 Q 136 46 148 32" stroke="#dff6ff" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.7" />
+            </g>
+
+            {/* key light: soft bloom + hard specular */}
+            <ellipse cx="98" cy="98" rx="42" ry="26" fill="#ffffff" opacity="0.32" filter="url(#cb-b10)" transform="rotate(-30 98 98)" />
+            <ellipse cx="88" cy="88" rx="13" ry="7" fill="#ffffff" opacity="0.9" transform="rotate(-35 88 88)" />
+            <circle cx="104" cy="80" r="3" fill="#ffffff" opacity="0.8" />
+
+            {/* brows */}
+            <path d="M 92 88 Q 106 76 122 84" stroke="#0b2a7a" strokeWidth="5" strokeLinecap="round" fill="none" />
+            <path d="M 142 84 Q 157 75 170 84" stroke="#0b2a7a" strokeWidth="4.6" strokeLinecap="round" fill="none" />
+
+            {/* eyes */}
+            <g className="chirp-eyes">
+              <ellipse cx="108" cy="120" rx="22" ry="26" fill="url(#cb-eye)" />
+              <ellipse cx="155" cy="120" rx="20" ry="24" fill="url(#cb-eye)" />
+              <g className="chirp-look">
+                <g clipPath="url(#cb-clip-eye-l)">
+                  <circle cx="112" cy="121" r="13.5" fill="url(#cb-iris)" />
+                  <circle cx="112" cy="122" r="7" fill="#020617" />
+                </g>
+                <g clipPath="url(#cb-clip-eye-r)">
+                  <circle cx="158" cy="121" r="12.5" fill="url(#cb-iris)" />
+                  <circle cx="158" cy="122" r="6.5" fill="#020617" />
+                </g>
+                <circle cx="117.5" cy="114" r="5.2" fill="#ffffff" />
+                <circle cx="107" cy="127" r="2.2" fill="#ffffff" opacity="0.9" />
+                <circle cx="163" cy="114" r="4.8" fill="#ffffff" />
+                <circle cx="154" cy="127" r="2" fill="#ffffff" opacity="0.9" />
+              </g>
+              {/* upper-lid shading */}
+              <ellipse cx="108" cy="96" rx="22" ry="6" fill="#6a85b8" opacity="0.16" filter="url(#cb-b2)" clipPath="url(#cb-clip-eye-l)" />
+              <ellipse cx="155" cy="97" rx="20" ry="5" fill="#6a85b8" opacity="0.16" filter="url(#cb-b2)" clipPath="url(#cb-clip-eye-r)" />
+            </g>
+
+            {/* cheeks */}
+            <ellipse cx="94" cy="154" rx="15" ry="9" fill="url(#cb-cheek)" />
+            <ellipse cx="174" cy="154" rx="13" ry="8" fill="url(#cb-cheek)" />
+
+            {/* beak: shadow, open mouth, upper beak, shine */}
+            <ellipse cx="134" cy="168" rx="24" ry="7" fill="#0b2a7a" opacity="0.28" filter="url(#cb-b2)" />
+            <path d="M 118 154 Q 133 178 150 154 Q 141 168 133 168 Q 125 167 118 154 Z" fill="#8a2a12" />
+            <ellipse cx="134" cy="163" rx="7" ry="3.4" fill="#ff7a9a" />
+            <path d="M 111 150 Q 133 134 159 148 Q 150 162 134 162 Q 118 160 111 150 Z" fill="url(#cb-beak)" />
+            <path d="M 120 146 Q 132 139 147 143" stroke="#fff6d6" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.85" />
+            <circle cx="122" cy="149" r="1.6" fill="#b34708" opacity="0.6" />
+            <circle cx="146" cy="149" r="1.6" fill="#b34708" opacity="0.6" />
+          </g>
+
+          {/* near wing — fanned feathers, waving */}
+          <g className="chirp-wing">
+            <path d="M 214 124 Q 242 98 258 82 Q 255 112 234 132 Z" fill="url(#cb-feather-dark)" />
+            <path d="M 210 112 Q 230 76 246 50 Q 250 84 232 114 Z" fill="url(#cb-feather)" />
+            <path d="M 212 138 Q 238 126 254 116 Q 248 140 226 150 Z" fill="url(#cb-feather)" />
+            <path d="M 186 128 Q 212 116 228 94 Q 238 122 220 148 Q 206 162 188 160 Z" fill="url(#cb-feather)" />
+            <path d="M 222 106 Q 234 86 242 64 M 228 124 Q 242 110 252 96 M 200 130 Q 214 122 224 108" stroke="#c4ecff" strokeWidth="1.8" strokeLinecap="round" fill="none" opacity="0.65" />
+            <ellipse cx="208" cy="124" rx="12" ry="6" fill="#ffffff" opacity="0.35" filter="url(#cb-b2)" transform="rotate(-35 208 124)" />
+          </g>
         </g>
       </g>
     </svg>
@@ -256,8 +319,7 @@ export default function Mascot() {
       <canvas ref={canvasRef} className="mascot-confetti" />
       <div className="mascot">
         <div className="mascot-bubble">
-          <b>Welcome to Prep Insights!</b>
-          <span>Let's crack that interview.</span>
+          <b>Welcome!</b>
         </div>
         <div className="mascot-figure">
           <ChirpSvg />

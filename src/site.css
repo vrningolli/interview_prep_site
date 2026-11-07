@@ -282,22 +282,26 @@
   /* rise (0–0.8s) · stay · fly down (6.5–7.2s) — keep in sync with TOTAL_MS */
   animation: mascotRise 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both, mascotExit 0.7s cubic-bezier(0.55, 0, 0.75, 0.2) 6.5s forwards;
 }
-.mascot-figure { position: relative; width: 200px; flex-shrink: 0; }
+.mascot-figure { position: relative; width: 220px; flex-shrink: 0; transform-style: preserve-3d; animation: chirpTurn 4.6s ease-in-out 1s infinite; }
 .chirp { display: block; width: 100%; height: auto; overflow: visible; }
-.mascot-hand { position: absolute; left: 86%; top: 18%; width: 10%; height: 10%; }
+.mascot-hand { position: absolute; left: 88%; top: 20%; width: 10%; height: 10%; }
 
-.chirp-bob { transform-box: fill-box; transform-origin: 50% 100%; animation: chirpBob 1.6s ease-in-out 0.8s infinite; }
+.chirp-squash { transform-box: fill-box; transform-origin: 50% 100%; animation: chirpLand 0.55s ease-out 0.55s both; }
+.chirp-bob { transform-box: fill-box; transform-origin: 50% 100%; animation: chirpBob 1.6s ease-in-out 1.1s infinite; }
+.chirp-ground { transform-box: fill-box; transform-origin: 50% 50%; animation: chirpGround 1.6s ease-in-out 1.1s infinite; }
+.chirp-look { animation: chirpLook 5s ease-in-out 1.8s infinite; }
+.chirp-crest { transform-box: fill-box; transform-origin: 40% 100%; animation: chirpCrest 1.6s ease-in-out 1.1s infinite; }
 .chirp-wing { transform-box: fill-box; transform-origin: 8% 92%; animation: chirpFlap 0.32s ease-in-out 0.7s 8 alternate, chirpWave 0.9s ease-in-out 3.3s 3 alternate; }
 .chirp-head { transform-box: fill-box; transform-origin: 50% 80%; animation: chirpTilt 3.2s ease-in-out 1.6s infinite; }
 .chirp-eyes { transform-box: fill-box; transform-origin: 50% 50%; animation: chirpBlink 3s ease-in-out 1.4s infinite; }
 .chirp-tail { transform-box: fill-box; transform-origin: 100% 60%; animation: chirpTail 1.6s ease-in-out 0.8s infinite; }
 
 .mascot-bubble {
-  position: relative; margin-bottom: 170px; max-width: 230px;
+  position: relative; margin-bottom: 190px; max-width: 230px;
   display: flex; flex-direction: column; gap: 2px;
   background: #ffffff; color: #0f172a; border: 1px solid #dbeafe;
-  padding: 0.75rem 1rem; border-radius: 16px 16px 4px 16px;
-  font-size: 0.88rem; line-height: 1.35;
+  padding: 0.6rem 1.15rem; border-radius: 18px 18px 4px 18px;
+  font-size: 1.15rem; line-height: 1.2;
   box-shadow: 0 20px 44px -18px rgba(30, 58, 138, 0.4), 0 2px 6px rgba(15, 23, 42, 0.06);
   animation: bubblePop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.95s both;
 }
@@ -306,7 +310,12 @@
 
 @keyframes mascotRise { from { transform: translateY(110%); } to { transform: translateY(0); } }
 @keyframes mascotExit { to { transform: translateY(115%); opacity: 0.6; } }
-@keyframes chirpBob { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-5px) scale(1.01, 0.99); } }
+@keyframes chirpBob { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-6px) scale(1.015, 0.985); } }
+@keyframes chirpLand { 0% { transform: scale(1, 1); } 30% { transform: scale(1.1, 0.88); } 60% { transform: scale(0.96, 1.05); } 100% { transform: scale(1, 1); } }
+@keyframes chirpGround { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.9); opacity: 0.75; } }
+@keyframes chirpLook { 0%, 18%, 100% { transform: translate(0, 0); } 26%, 44% { transform: translate(-3px, 1px); } 54%, 72% { transform: translate(3px, -1px); } }
+@keyframes chirpCrest { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-4deg); } }
+@keyframes chirpTurn { 0%, 100% { transform: perspective(700px) rotateY(0deg); } 30% { transform: perspective(700px) rotateY(-14deg); } 65% { transform: perspective(700px) rotateY(10deg); } }
 @keyframes chirpFlap { from { transform: rotate(-18deg); } to { transform: rotate(22deg); } }
 @keyframes chirpWave { from { transform: rotate(-6deg); } to { transform: rotate(14deg); } }
 @keyframes chirpTilt { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-5deg); } 60% { transform: rotate(4deg); } }
@@ -317,7 +326,7 @@
 @media (max-width: 640px) {
   /* Phones: centred across the full width, bubble stacked above the bird */
   .mascot { left: 0; right: 0; flex-direction: column; align-items: center; gap: 4px; }
-  .mascot-figure { width: 150px; }
+  .mascot-figure { width: 160px; }
   .mascot-bubble { margin-bottom: 0; max-width: 240px; text-align: center; font-size: 0.82rem; padding: 0.55rem 0.85rem; border-radius: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { .mascot-layer { display: none; } }
