@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import rawContent from "../data/content.json";
+import Mascot from "./Mascot";
 import type { Content } from "../types";
 import { COMPANY_ORDER, COMPANIES } from "../data/companies";
 
@@ -163,6 +164,7 @@ function HeroPreview() {
 export default function Landing() {
   return (
     <div className="landing">
+      <Mascot />
       <section className="hero">
         <div className="hero-copy">
           <span className="eyebrow">
