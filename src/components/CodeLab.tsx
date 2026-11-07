@@ -1,3 +1,4 @@
+import { Code, Lightbulb, OctagonAlert, PartyPopper, Timer, Trophy } from "lucide-react";
 import { useRef, useState } from "react";
 import { CHALLENGES } from "../lab/challenges";
 import { runTests, RunOutcome } from "../lab/runner";
@@ -59,8 +60,8 @@ function CodeLabInner({ challengeKey }: { challengeKey: string }) {
   return (
     <section>
       <h3>
-        💻 Code it yourself
-        {solved && <span className="lab-solved-chip">🏆 solved</span>}
+        <Code size={18} /> Code it yourself
+        {solved && <span className="lab-solved-chip"><Trophy size={13} /> solved</span>}
       </h3>
       <div className="codelab">
         <div className="codelab-head">
@@ -94,21 +95,21 @@ function CodeLabInner({ challengeKey }: { challengeKey: string }) {
           </button>
           {!showHint && (
             <button className="btn-ghost" onClick={() => setShowHint(true)}>
-              💡 Hint
+              <Lightbulb size={14} /> Hint
             </button>
           )}
         </div>
-        {showHint && <div className="problem-hint">💡 {challenge.hint}</div>}
+        {showHint && <div className="problem-hint"><Lightbulb size={15} /> {challenge.hint}</div>}
 
         {outcome?.timeout && (
-          <div className="codelab-fatal">⏱️ Timed out after 4s — infinite loop? Check your loop/recursion exit condition.</div>
+          <div className="codelab-fatal"><Timer size={15} /> Timed out after 4s — infinite loop? Check your loop/recursion exit condition.</div>
         )}
-        {outcome?.fatal && <div className="codelab-fatal">💥 {outcome.fatal}</div>}
+        {outcome?.fatal && <div className="codelab-fatal"><OctagonAlert size={15} /> {outcome.fatal}</div>}
         {outcome?.results && (
           <div className="codelab-results">
             {allPass && (
               <div className="codelab-pass-banner">
-                🎉 All {outcome.results.length} tests pass — you implemented it!
+                <PartyPopper size={16} /> All {outcome.results.length} tests pass — you implemented it!
               </div>
             )}
             {outcome.results.map((r, i) => (

@@ -1,11 +1,12 @@
 /* The generated week-by-week board: phases → week cards → checkable tasks. */
 
+import { PillarIcon } from "../Icons";
 import { COMPANIES, PILLARS, PillarKey } from "../../data/companies";
 import { Plan, PlanWeek, currentWeek } from "../../prep/planner";
 
 function pillarChip(pillar: PillarKey | "mock") {
-  if (pillar === "mock") return { label: "Mock", emoji: "🎤" };
-  return { label: PILLARS[pillar].short, emoji: PILLARS[pillar].emoji };
+  if (pillar === "mock") return { label: "Mock", pillar };
+  return { label: PILLARS[pillar].short, pillar };
 }
 
 function WeekCard({
@@ -71,7 +72,7 @@ function WeekCard({
                   </span>
                 )}
                 <span className={`task-pillar pillar-${t.pillar}`}>
-                  {chip.emoji} {chip.label}
+                  <PillarIcon p={chip.pillar} size={13} /> {chip.label}
                 </span>
                 {t.topic && (
                   <button className="task-link" onClick={() => onOpenTopic(t.topic!.cat, t.topic!.key)}>

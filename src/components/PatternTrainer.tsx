@@ -1,3 +1,4 @@
+import { Crosshair, PartyPopper } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Drill } from "../types";
 import { useLocalStorage } from "../state";
@@ -42,13 +43,13 @@ export default function PatternTrainer({ drills }: { drills: Drill[] }) {
           : "Pattern recognition needs reps. Revisit the Algorithms tab, then retry — this skill improves fast.";
     return (
       <div className="topic-card">
-        <h2>🎯 Pattern Trainer</h2>
+        <h2><Crosshair size={22} /> Pattern Trainer</h2>
         <div className="trainer-summary">
           <div className="trainer-summary-score">
             {score} / {order.length}
           </div>
           <p>{verdict}</p>
-          {score > best && <p className="trainer-newbest">🎉 New best run!</p>}
+          {score > best && <p className="trainer-newbest"><PartyPopper size={16} /> New best run!</p>}
           <button className="btn-primary" onClick={restart}>
             Run another round (reshuffled)
           </button>
@@ -59,7 +60,7 @@ export default function PatternTrainer({ drills }: { drills: Drill[] }) {
 
   return (
     <div className="topic-card">
-      <h2>🎯 Pattern Trainer</h2>
+      <h2><Crosshair size={22} /> Pattern Trainer</h2>
       <div className="plain-english">
         <strong>The real interview skill</strong>
         Interviews are won in the first 2 minutes — when you read the problem and recognize <em>which technique fits</em>.

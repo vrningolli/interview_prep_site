@@ -1,3 +1,4 @@
+import { CalendarDays, CircleCheck, Lightbulb, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { Content, QuizQuestion } from "../types";
 import {
@@ -15,7 +16,7 @@ function resolve(item: ReviewItem, content: Content) {
   if (item.type === "quiz") {
     const topic = content.topics.find((t) => t.key === item.payload.topicKey);
     const q = topic?.quiz[item.payload.qIndex ?? -1];
-    return q ? { kind: "mcq" as const, q, source: `${topic!.emoji} ${topic!.title} quiz` } : null;
+    return q ? { kind: "mcq" as const, q, source: `${topic!.title} quiz` } : null;
   }
   if (item.type === "drill") {
     const d = content.drills[item.payload.index ?? -1];
@@ -23,7 +24,7 @@ function resolve(item: ReviewItem, content: Content) {
       ? {
           kind: "mcq" as const,
           q: { q: d.q, opts: d.opts, correct: d.correct, why: `Signal: ${d.signal} — ${d.why}` } as QuizQuestion,
-          source: "🎯 Pattern Trainer",
+          source: "Pattern Trainer",
         }
       : null;
   }
@@ -34,7 +35,7 @@ function resolve(item: ReviewItem, content: Content) {
         .find((p) => p.title === item.payload.title)
     : null;
   return prob
-    ? { kind: "problem" as const, prob, source: `${topic!.emoji} ${topic!.title} · ${item.payload.level}` }
+    ? { kind: "problem" as const, prob, source: `${topic!.title} · ${item.payload.level}` }
     : null;
 }
 
@@ -103,7 +104,7 @@ export default function ReviewDeck({ content }: { content: Content }) {
 
   return (
     <div className="topic-card">
-      <h2>🔁 Review</h2>
+      <h2><RotateCcw size={22} /> Review</h2>
       <div className="plain-english">
         <strong>Spaced repetition — beat the forgetting curve</strong>
         Everything you miss (quiz questions, trainer drills) or peek at (problem solutions) lands here. Answer it right
@@ -126,7 +127,7 @@ export default function ReviewDeck({ content }: { content: Content }) {
             <div className="review-source">{resolved.source}</div>
             <div className="quiz-question">{resolved.prob.title}</div>
             <p className="problem-body">{resolved.prob.body}</p>
-            <div className="problem-hint">💡 {resolved.prob.hint}</div>
+            <div className="problem-hint"><Lightbulb size={15} /> {resolved.prob.hint}</div>
             <p className="review-ask">
               You previously needed the solution for this one. Solve it again now — on paper or in your head — then
               grade yourself honestly:
@@ -143,7 +144,7 @@ export default function ReviewDeck({ content }: { content: Content }) {
         )
       ) : (
         <div className="trainer-summary">
-          <div className="trainer-summary-score">✅</div>
+          <div className="trainer-summary-score"><CircleCheck size={44} /></div>
           <p>
             {items.length === 0
               ? "Nothing to review yet. Miss a quiz question or peek at a solution, and it will show up here automatically."
@@ -154,7 +155,7 @@ export default function ReviewDeck({ content }: { content: Content }) {
 
       {upcoming.length > 0 && (
         <div className="review-upcoming">
-          <h3>📅 Coming up</h3>
+          <h3><CalendarDays size={18} /> Coming up</h3>
           <ul>
             {upcoming.slice(0, 8).map((i) => {
               const r = resolve(i, content);

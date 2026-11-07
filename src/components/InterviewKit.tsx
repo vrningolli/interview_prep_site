@@ -1,3 +1,4 @@
+import { Bomb, Compass, MessageSquareQuote, Puzzle, Timer, TrendingUp, TriangleAlert, WandSparkles } from "lucide-react";
 /* Interview meta-skills: Big-O primer, input-size → complexity guide,
    UMPIRE framework, edge cases, JS traps, and a final-48h plan. */
 
@@ -78,7 +79,7 @@ const GOTCHAS: [string, string][] = [
 export default function InterviewKit() {
   return (
     <div className="topic-card">
-      <h2>🧭 Interview Kit</h2>
+      <h2><Compass size={22} /> Interview Kit</h2>
       <div className="plain-english">
         <strong>Everything that isn't a data structure</strong>
         Interviews grade four things: <em>communication, problem solving, clean code, and verification</em> — not just
@@ -86,7 +87,7 @@ export default function InterviewKit() {
         size, a step-by-step framework for any problem, and the JavaScript traps that sink candidates.
       </div>
 
-      <h3>📈 Big-O in one table</h3>
+      <h3><TrendingUp size={18} /> Big-O in one table</h3>
       <p className="demo-intro">
         Read it as “if the input doubles, how much more work do I do?” Drop constants, keep the dominant term: O(2n +
         10) is O(n); nested loops multiply; halving each step means log.
@@ -114,7 +115,7 @@ export default function InterviewKit() {
         </tbody>
       </table>
 
-      <h3>🔮 Guess the intended solution from n</h3>
+      <h3><WandSparkles size={18} /> Guess the intended solution from n</h3>
       <p className="demo-intro">
         Interviewers (and LeetCode constraints) leak the answer: input size tells you the target complexity. A computer
         does roughly 10⁷–10⁸ simple operations per second.
@@ -142,9 +143,9 @@ export default function InterviewKit() {
         </tbody>
       </table>
 
-      <h3>🧩 UMPIRE — a framework for any problem</h3>
+      <h3><Puzzle size={18} /> UMPIRE — a framework for any problem</h3>
       <p className="demo-intro">
-        Worked example: Two Sum. The 🗣️ lines are literally what you say — interviewers grade the narration as much as
+        Worked example: Two Sum. The quoted lines are literally what you say — interviewers grade the narration as much as
         the code.
       </p>
       <div className="kit-steps">
@@ -152,12 +153,12 @@ export default function InterviewKit() {
           <div key={i} className="kit-step">
             <h4>{step}</h4>
             <p>{what}</p>
-            <div className="kit-say">🗣️ {say}</div>
+            <div className="kit-say"><MessageSquareQuote size={15} /> {say}</div>
           </div>
         ))}
       </div>
 
-      <h3>🧨 Edge cases to check every single time</h3>
+      <h3><Bomb size={18} /> Edge cases to check every single time</h3>
       <div className="plain-english">
         <ul className="kit-edges">
           {EDGE_CASES.map((e, i) => (
@@ -166,7 +167,7 @@ export default function InterviewKit() {
         </ul>
       </div>
 
-      <h3>⚠️ JavaScript-specific interview traps</h3>
+      <h3><TriangleAlert size={18} /> JavaScript-specific interview traps</h3>
       <div className="kit-gotchas">
         {GOTCHAS.map(([bad, fix], i) => (
           <div key={i} className="kit-gotcha">
@@ -176,7 +177,7 @@ export default function InterviewKit() {
         ))}
       </div>
 
-      <h3>⏱️ The last 48 hours before the interview</h3>
+      <h3><Timer size={18} /> The last 48 hours before the interview</h3>
       <div className="plain-english">
         <ol className="kit-edges">
           <li>

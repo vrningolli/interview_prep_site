@@ -1,3 +1,4 @@
+import { Brain, Lightbulb, Pause, Play, RotateCcw, SkipBack } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Viz, Row } from "./frames";
 
@@ -114,7 +115,7 @@ export default function StepPlayer({ viz }: { viz: Viz }) {
         <h4>{viz.title}</h4>
         <span className="viz-progress">
           {pScore.total > 0 && (
-            <span className="viz-predict-score">🧠 {pScore.right}/{pScore.total} predicted · </span>
+            <span className="viz-predict-score"><Brain size={14} /> {pScore.right}/{pScore.total} predicted · </span>
           )}
           Step {step + 1} / {n}
         </span>
@@ -123,7 +124,7 @@ export default function StepPlayer({ viz }: { viz: Viz }) {
 
       {predict ? (
         <div className="viz-predict">
-          <div className="viz-predict-q">🧠 Predict: {predict.q}</div>
+          <div className="viz-predict-q"><Brain size={15} /> Predict: {predict.q}</div>
           <div className="quiz-options">
             {predict.opts.map((o, i) => (
               <button
@@ -165,13 +166,13 @@ export default function StepPlayer({ viz }: { viz: Viz }) {
           </div>
 
           <div className="viz-caption">{frame.caption}</div>
-          {frame.note && <div className="viz-note">💡 {frame.note}</div>}
+          {frame.note && <div className="viz-note"><Lightbulb size={15} /> {frame.note}</div>}
         </>
       )}
 
       <div className="viz-controls">
         <button onClick={() => { setPending(null); setPick(null); setStep(0); }} disabled={step === 0 && pending === null} aria-label="Restart">
-          ⏮
+          <SkipBack size={15} />
         </button>
         <button
           onClick={() => { setPending(null); setPick(null); setStep((s) => Math.max(s - 1, 0)); }}
@@ -186,7 +187,7 @@ export default function StepPlayer({ viz }: { viz: Viz }) {
           disabled={pending !== null}
           aria-label={playing ? "Pause" : "Play"}
         >
-          {playing ? "⏸ Pause" : step >= n - 1 ? "↻ Replay" : "▶ Play"}
+          {playing ? (<><Pause size={15} /> Pause</>) : step >= n - 1 ? (<><RotateCcw size={15} /> Replay</>) : (<><Play size={15} /> Play</>)}
         </button>
         <button onClick={advance} disabled={step >= n - 1 || pending !== null} aria-label="Next step">
           ›
@@ -218,7 +219,7 @@ export default function StepPlayer({ viz }: { viz: Viz }) {
             onClick={() => setQuizMe((q) => !q)}
             title="Pause before key steps and ask you to predict what happens next"
           >
-            🧠 Quiz me
+            <Brain size={14} /> Quiz me
           </button>
         )}
       </div>

@@ -1,3 +1,4 @@
+import { ListChecks } from "lucide-react";
 import { useEffect, useState } from "react";
 import { QuizQuestion } from "../types";
 import { recordMiss } from "../review/store";
@@ -28,7 +29,7 @@ export default function Quiz({ questions, topicKey }: { questions: QuizQuestion[
     return (
       <section className="quiz-section">
         <div className="quiz-header">
-          <h2>🎯 Quick Check</h2>
+          <h2><ListChecks size={22} /> Quick Check</h2>
         </div>
         <div className="trainer-summary">
           <div className="trainer-summary-score">
@@ -64,7 +65,7 @@ export default function Quiz({ questions, topicKey }: { questions: QuizQuestion[
   return (
     <section className="quiz-section">
       <div className="quiz-header">
-        <h2>🎯 Quick Check</h2>
+        <h2><ListChecks size={22} /> Quick Check</h2>
         <span className="quiz-pill">
           {idx + 1} of {questions.length}
           {idx > 0 ? ` · score ${score}/${idx + (answered ? 1 : 0)}` : ""}

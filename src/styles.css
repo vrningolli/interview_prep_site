@@ -965,3 +965,17 @@ textarea.field { resize: vertical; line-height: 1.5; }
   .prep-tab { padding: 0.4rem 0.7rem; font-size: 0.82rem; }
   .log-item { align-items: flex-start; }
 }
+
+/* ============ Icons (Lucide) ============ */
+svg.lucide { flex-shrink: 0; vertical-align: -0.16em; }
+h2 > svg.lucide, h3 > svg.lucide, h4 > svg.lucide { color: var(--primary); margin-right: 0.45rem; vertical-align: -0.14em; }
+h4 > svg.lucide-circle-x { color: var(--danger); }
+h4 > svg.lucide-circle-check { color: var(--accent); }
+.problem-hint > svg.lucide, .analogy > svg.lucide, .viz-note > svg.lucide { color: var(--warn); margin-right: 0.35rem; }
+.level-tab, .prep-tab, .viz-controls button, .lab-solved-chip, .cs-label, .kit-say, .viz-predict-q, .viz-predict-score { display: inline-flex; align-items: center; gap: 0.35rem; }
+.kit-say > svg.lucide { color: var(--primary); }
+.cs-emoji { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; color: var(--primary); background: var(--primary-soft); }
+.trainer-summary-score svg { color: var(--accent); }
+.lvl-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.lvl-easy { background: #10b981; } .lvl-medium { background: #f59e0b; } .lvl-hard { background: #ef4444; }
+.pillar-bar-key, .weight-key, .task-pillar { display: inline-flex; align-items: center; gap: 0.3rem; }

@@ -250,7 +250,7 @@ export function greedyViz(): Viz {
       { predict: { q: "Remaining: 16¢. Which coin does greedy take next?", opts: ["25¢", "10¢ — the largest that fits", "1¢"], correct: 1 }, caption: "25 > 16, move on. 10 ≤ 16 → take a dime. Remaining: 6¢.", rows: [cr(1), taken([25, 10])], line: 2, vars: { remaining: "6¢" } },
       { caption: "5 ≤ 6 → take a nickel. Remaining: 1¢.", rows: [cr(2), taken([25, 10, 5])], line: 2, vars: { remaining: "1¢" } },
       { caption: "Take a penny. Done: 4 coins — and for US denominations this IS optimal.", rows: [cr(3), taken([25, 10, 5, 1])], line: 2, vars: { remaining: "0¢", coins: 4 } },
-      { caption: "⚠️ But change the coins to {1, 3, 4} and make 6: greedy takes 4+1+1 = 3 coins, optimal is 3+3 = 2. Greedy needs PROOF (exchange argument) — when it fails, reach for DP.", rows: [row([c("4¢", "warn"), c("1¢", "warn"), c("1¢", "warn")], "greedy: 3 coins"), row([c("3¢", "done"), c("3¢", "done")], "optimal: 2 coins")], line: 0, note: "Greedy correct: activity selection, jump game, Huffman. Greedy wrong: general coin change, knapsack → DP." },
+      { caption: "Careful: change the coins to {1, 3, 4} and make 6: greedy takes 4+1+1 = 3 coins, optimal is 3+3 = 2. Greedy needs PROOF (exchange argument) — when it fails, reach for DP.", rows: [row([c("4¢", "warn"), c("1¢", "warn"), c("1¢", "warn")], "greedy: 3 coins"), row([c("3¢", "done"), c("3¢", "done")], "optimal: 2 coins")], line: 0, note: "Greedy correct: activity selection, jump game, Huffman. Greedy wrong: general coin change, knapsack → DP." },
     ],
   };
 }

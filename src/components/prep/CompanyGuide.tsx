@@ -1,5 +1,6 @@
 /* Per-company briefing: the loop, the weighting, the rubric, and the traps. */
 
+import { PillarIcon } from "../Icons";
 import { CompanyKey, COMPANIES, PILLARS, PillarKey } from "../../data/companies";
 
 export default function CompanyGuide({ companies }: { companies: CompanyKey[] }) {
@@ -24,7 +25,7 @@ export default function CompanyGuide({ companies }: { companies: CompanyKey[] })
                 <div key={p} className="weight-item">
                   <div className="weight-val">{c.weights[p]}%</div>
                   <div className="weight-key">
-                    {PILLARS[p].emoji} {PILLARS[p].short}
+                    <PillarIcon p={p} size={14} /> {PILLARS[p].short}
                   </div>
                 </div>
               ))}

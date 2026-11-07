@@ -1,3 +1,4 @@
+import { BookOpen, CircleCheck, CirclePlay, CircleX, Code, Compass, Gauge, Globe, Lightbulb, Mic, Microscope, Puzzle, Rocket } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Topic } from "../types";
 import { getViz } from "../viz";
@@ -17,7 +18,7 @@ function Lessons({ topic }: { topic: Topic }) {
   useEffect(() => setOpen(0), [topic.key]);
   return (
     <section>
-      <h3>📖 Learn it step by step</h3>
+      <h3><BookOpen size={18} /> Learn it step by step</h3>
       <div className="lessons-legend">
         <span>
           <span className="lesson-level level-beginner">Beginner</span> concept &amp; basics
@@ -55,10 +56,10 @@ function Lessons({ topic }: { topic: Topic }) {
 }
 
 const ENRICH_TABS = [
-  { key: "patternCues", label: "🧩 Pattern cues" },
-  { key: "interviewTips", label: "🎤 Interview tips" },
-  { key: "realWorld", label: "🌍 Real world" },
-  { key: "deepLessons", label: "🔬 Deep dives" },
+  { key: "patternCues", label: "Pattern cues", Icon: Puzzle },
+  { key: "interviewTips", label: "Interview tips", Icon: Mic },
+  { key: "realWorld", label: "Real world", Icon: Globe },
+  { key: "deepLessons", label: "Deep dives", Icon: Microscope },
 ] as const;
 
 function EnrichmentPanel({ topic }: { topic: Topic }) {
@@ -72,11 +73,11 @@ function EnrichmentPanel({ topic }: { topic: Topic }) {
 
   return (
     <section>
-      <h3>🚀 Go deeper</h3>
+      <h3><Rocket size={18} /> Go deeper</h3>
       <div className="level-tabs">
         {tabs.map((t) => (
           <button key={t.key} className={`level-tab ${active.key === t.key ? "active" : ""}`} onClick={() => setTab(t.key)}>
-            {t.label}
+            <t.Icon size={14} /> {t.label}
           </button>
         ))}
       </div>
@@ -127,11 +128,11 @@ export default function TopicPage({
         <strong>In plain English</strong>
         {topic.plain}
       </div>
-      <div className="analogy">💡 {topic.analogy}</div>
+      <div className="analogy"><Lightbulb size={16} /> {topic.analogy}</div>
 
       {viz && (
         <section>
-          <h3>🎬 Watch it work — step by step</h3>
+          <h3><CirclePlay size={18} /> Watch it work — step by step</h3>
           <StepPlayer viz={viz} />
         </section>
       )}
@@ -139,7 +140,7 @@ export default function TopicPage({
       <Lessons topic={topic} />
 
       <section>
-        <h3>⏱️ How fast is it?</h3>
+        <h3><Gauge size={18} /> How fast is it?</h3>
         <table className="complexity-table">
           <thead>
             <tr>
@@ -163,10 +164,10 @@ export default function TopicPage({
       </section>
 
       <section>
-        <h3>🧭 When to use it</h3>
+        <h3><Compass size={18} /> When to use it</h3>
         <div className="when-to-use">
           <div className="use-yes">
-            <h4>✅ Good fit</h4>
+            <h4><CircleCheck size={16} /> Good fit</h4>
             <ul>
               {topic.useYes.map((s, i) => (
                 <li key={i}>{s}</li>
@@ -174,7 +175,7 @@ export default function TopicPage({
             </ul>
           </div>
           <div className="use-no">
-            <h4>❌ Bad fit</h4>
+            <h4><CircleX size={16} /> Bad fit</h4>
             <ul>
               {topic.useNo.map((s, i) => (
                 <li key={i}>{s}</li>
@@ -185,7 +186,7 @@ export default function TopicPage({
       </section>
 
       <section>
-        <h3>👨‍💻 Code example</h3>
+        <h3><Code size={18} /> Code example</h3>
         <pre className="code-block">{topic.code}</pre>
       </section>
 

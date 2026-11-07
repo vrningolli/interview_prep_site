@@ -1,12 +1,13 @@
+import { Dumbbell, Lightbulb, LockOpen } from "lucide-react";
 import { useState } from "react";
 import { Problem, Topic } from "../types";
 import { recordMiss } from "../review/store";
 
 const LEVELS = ["easy", "medium", "hard"] as const;
 const LEVEL_META = {
-  easy: { label: "Easy", emoji: "🟢" },
-  medium: { label: "Medium", emoji: "🟡" },
-  hard: { label: "Hard", emoji: "🔴" },
+  easy: { label: "Easy" },
+  medium: { label: "Medium" },
+  hard: { label: "Hard" },
 };
 
 function ProblemCard({
@@ -52,10 +53,10 @@ function ProblemCard({
       <p className="problem-body">{p.body}</p>
       {reveal === 0 && (
         <button className="btn-ghost" onClick={() => setReveal(1)}>
-          💡 Show hint
+          <Lightbulb size={14} /> Show hint
         </button>
       )}
-      {reveal >= 1 && <div className="problem-hint">💡 {p.hint}</div>}
+      {reveal >= 1 && <div className="problem-hint"><Lightbulb size={15} /> {p.hint}</div>}
       {reveal === 1 && solution && (
         <button
           className="btn-ghost"
@@ -65,7 +66,7 @@ function ProblemCard({
             recordMiss(`prob:${id}`, "problem", { topicKey, title: p.title, level });
           }}
         >
-          🔓 Show solution
+          <LockOpen size={14} /> Show solution
         </button>
       )}
       {reveal === 2 && solution && <pre className="problem-solution">{solution}</pre>}
@@ -89,7 +90,7 @@ export default function Problems({
   return (
     <section>
       <h3>
-        🏋️ Practice problems{" "}
+        <Dumbbell size={18} /> Practice problems{" "}
         <span className="prob-progress">
           {solvedCount} / {all.length} solved
         </span>
@@ -100,7 +101,7 @@ export default function Problems({
           const done = topic.problems[lv].filter((p) => solvedSet.has(`${topic.key}::${p.title}`)).length;
           return (
             <button key={lv} className={`level-tab ${level === lv ? "active" : ""}`} onClick={() => setLevel(lv)}>
-              {LEVEL_META[lv].emoji} {LEVEL_META[lv].label} ({done}/{count})
+              <span className={`lvl-dot lvl-${lv}`} /> {LEVEL_META[lv].label} ({done}/{count})
             </button>
           );
         })}

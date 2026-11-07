@@ -1,6 +1,9 @@
 /* Company Prep — the multi-company interview roadmap.
    Container: owns persisted state, regenerates the plan, and switches views. */
 
+import type { LucideIcon } from "lucide-react";
+import { Building2, Link2, Map as MapIcon, MessagesSquare, NotebookPen } from "lucide-react";
+import { PillarIcon } from "./Icons";
 import { useMemo, useRef, useState } from "react";
 import { COMPANIES, PILLARS, PillarKey } from "../data/companies";
 import { buildPlan, currentWeek, daysUntil } from "../prep/planner";
@@ -15,12 +18,12 @@ import WeakLog from "./prep/WeakLog";
 
 type View = "plan" | "companies" | "resources" | "stories" | "log";
 
-const VIEWS: { key: View; label: string; emoji: string }[] = [
-  { key: "plan", label: "Plan", emoji: "🗺️" },
-  { key: "companies", label: "Companies", emoji: "🏢" },
-  { key: "resources", label: "Resources", emoji: "🔗" },
-  { key: "stories", label: "Story bank", emoji: "💬" },
-  { key: "log", label: "Problem log", emoji: "📓" },
+const VIEWS: { key: View; label: string; Icon: LucideIcon }[] = [
+  { key: "plan", label: "Plan", Icon: MapIcon },
+  { key: "companies", label: "Companies", Icon: Building2 },
+  { key: "resources", label: "Resources", Icon: Link2 },
+  { key: "stories", label: "Story bank", Icon: MessagesSquare },
+  { key: "log", label: "Problem log", Icon: NotebookPen },
 ];
 
 export default function CompanyPrep({ onOpenTopic }: { onOpenTopic: (cat: "ds" | "algo", key: string) => void }) {
@@ -102,7 +105,7 @@ export default function CompanyPrep({ onOpenTopic }: { onOpenTopic: (cat: "ds" |
             {stats.pillars.map(({ p, pct, done, total }) => (
               <div key={p} className="pillar-bar" title={`${done}/${total} ${PILLARS[p].label} tasks`}>
                 <span className="pillar-bar-key">
-                  {PILLARS[p].emoji} {PILLARS[p].short}
+                  <PillarIcon p={p} size={14} /> {PILLARS[p].short}
                 </span>
                 <span className="pillar-track">
                   <span className={`pillar-fill pillar-${p}`} style={{ width: `${pct}%` }} />
@@ -151,7 +154,7 @@ export default function CompanyPrep({ onOpenTopic }: { onOpenTopic: (cat: "ds" |
             className={`prep-tab ${view === v.key ? "on" : ""}`}
             onClick={() => setView(v.key)}
           >
-            <span aria-hidden>{v.emoji}</span> {v.label}
+            <v.Icon size={15} aria-hidden /> {v.label}
             {v.key === "log" && dueCount > 0 && <span className="due-badge">{dueCount}</span>}
           </button>
         ))}
