@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Menu, Moon, Sun } from "lucide-react";
+import { ChevronLeft, ChevronRight, Menu } from "lucide-react";
 import rawContent from "./data/content.json";
 import { Content, Tab, Topic } from "./types";
-import { useLocalStorage, useStoredSet } from "./state";
+import { useStoredSet } from "./state";
 import Sidebar from "./components/Sidebar";
 import TopicPage from "./components/TopicPage";
 import PatternTrainer from "./components/PatternTrainer";
@@ -25,7 +25,6 @@ const TAB_NAMES: Record<Tab, string> = {
 
 /** The Prep Coach study app (sidebar + topics + tools), shown at #prep. */
 export default function PrepCoach() {
-  const [theme, setTheme] = useLocalStorage<"light" | "dark">("dscoach-theme", "light");
   const [tab, setTab] = useState<Tab>("ds");
   const [topicKey, setTopicKey] = useState("array");
   const [search, setSearch] = useState("");
@@ -35,9 +34,10 @@ export default function PrepCoach() {
   const searchRef = useRef<HTMLInputElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
 
+  // Prep Coach is light-only.
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+    document.documentElement.setAttribute("data-theme", "light");
+  }, []);
 
   const topic: Topic | undefined = content.topics.find((t) => t.key === topicKey);
 
@@ -77,7 +77,7 @@ export default function PrepCoach() {
     selectTopic(next.key);
   };
 
-  // Global shortcuts: Alt+←/→ topics, D theme, / search.
+  // Global shortcuts: Alt+←/→ topics, / search.
   // (Plain arrows belong to the focused StepPlayer.)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -85,7 +85,6 @@ export default function PrepCoach() {
       if (tag === "input" || tag === "textarea" || e.defaultPrevented) return;
       if (e.altKey && e.key === "ArrowRight") move(1);
       else if (e.altKey && e.key === "ArrowLeft") move(-1);
-      else if (e.key.toLowerCase() === "d") setTheme((t) => (t === "dark" ? "light" : "dark"));
       else if (e.key === "/") {
         e.preventDefault();
         searchRef.current?.focus();
@@ -138,14 +137,6 @@ export default function PrepCoach() {
                 </button>
               </>
             )}
-            <button
-              className="icon-btn"
-              onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-              title="Toggle theme (D)"
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
           </div>
         </header>
 
@@ -169,7 +160,7 @@ export default function PrepCoach() {
         <footer className="footer">
           <p>Built for learning — click around, nothing is scary, everything is reversible.</p>
           <p className="footer-shortcut">
-            <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd> switch topics · <kbd>D</kbd> dark mode · <kbd>/</kbd> search ·
+            <kbd>Alt</kbd>+<kbd>←</kbd>/<kbd>→</kbd> switch topics · <kbd>/</kbd> search ·
             click a visualizer, then <kbd>←</kbd>/<kbd>→</kbd>/<kbd>space</kbd> to step &amp; play
           </p>
         </footer>

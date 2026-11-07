@@ -27,10 +27,15 @@ export default function App() {
     document.title = TITLES[route];
   }, [route]);
 
-  // The landing page is always light; Prep Coach applies its own saved theme on mount.
+  // The whole site is light-only (no dark theme).
   useEffect(() => {
-    if (route === "home") document.documentElement.setAttribute("data-theme", "light");
-  }, [route]);
+    document.documentElement.setAttribute("data-theme", "light");
+    try {
+      localStorage.removeItem("dscoach-theme"); // drop any old dark-mode preference
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
 
   return (
     <div className={`site site-${route}`}>
