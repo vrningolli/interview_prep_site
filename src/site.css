@@ -264,6 +264,11 @@
 /* Phones: hero buttons never wrap — stack them full-width instead */
 .lp-btn { white-space: nowrap; }
 @media (max-width: 480px) {
-  .hero-ctas { flex-direction: column; }
-  .hero-ctas .lp-btn { width: 100%; flex: none; }
+  /* Keep the two buttons side by side: shrink type and padding instead of wrapping */
+  .hero-ctas { flex-direction: row; flex-wrap: nowrap; gap: 0.5rem; }
+  .hero-ctas .lp-btn { flex: 1 1 0; min-width: 0; padding: 0 0.55rem; gap: 0.3rem; font-size: clamp(0.74rem, 3.6vw, 0.92rem); height: 46px; }
+  .hero-ctas .lp-btn svg { width: 15px; height: 15px; }
+}
+@media (max-width: 360px) {
+  .hero-ctas .lp-btn svg { display: none; }
 }
