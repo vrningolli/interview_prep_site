@@ -1,9 +1,20 @@
 {
-  // Static-site deploy on Cloudflare Workers: serve the Vite build output.
-  // Having this file skips wrangler's auto-config (which requires Vite >= 6).
+  // DS Coach on Cloudflare Workers: static site from ./dist, plus a small
+  // Worker (worker/index.js) that serves the AI Lab's free agent model.
+  // Having this file also skips wrangler's auto-config (which requires Vite >= 6).
   "name": "interview-prep-site",
+  "main": "worker/index.js",
   "compatibility_date": "2026-10-01",
   "assets": {
-    "directory": "./dist"
-  }
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // Only API calls run the Worker; every other request is a plain static file.
+    "run_worker_first": ["/api/*"]
+  },
+  // Cloudflare Workers AI — free daily allowance, no API key needed.
+  "ai": { "binding": "AI" },
+  // Per-visitor limit on free-model runs: 5 per minute per IP.
+  "ratelimits": [
+    { "name": "RATE_LIMITER", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } }
+  ]
 }
