@@ -82,6 +82,9 @@ code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; }
 
 /* ============ Layout ============ */
 .app-shell { display: flex; height: 100%; }
+.site { min-height: 100%; display: flex; flex-direction: column; }
+.site-prep { height: 100%; }
+.site-prep .app-shell { flex: 1; min-height: 0; height: auto; }
 
 .sidebar {
   width: var(--side-w);
@@ -178,19 +181,17 @@ code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; }
 .crumb-sep { color: var(--border-strong); }
 .crumb-topic { font-weight: 700; }
 .topbar-actions { display: flex; gap: 0.35rem; align-items: center; }
-.made-by { font-size: 0.68rem; color: var(--muted); white-space: nowrap; margin-right: 0.4rem; letter-spacing: 0.01em; }
+.made-by { font-size: 0.7rem; color: var(--muted); white-space: nowrap; letter-spacing: 0.01em; }
 .made-by .heart { color: var(--danger); }
 /* Phones: keep the top bar on one line and every button on-screen. */
 @media (max-width: 600px) {
-  .topbar { gap: 0.5rem; padding-bottom: 1.1rem; }
+  .topbar { gap: 0.5rem; }
   .topbar-center { min-width: 0; font-size: 0.88rem; }
   /* On a topic page the topic name alone is enough — drop the category crumb. */
   .topbar-center:has(.crumb-topic) .crumb-cat,
   .topbar-center:has(.crumb-topic) .crumb-sep { display: none; }
   .crumb-cat, .crumb-topic { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .topbar-actions { flex-shrink: 0; }
-  /* Credit tucks under the buttons, still top-right. */
-  .made-by { position: absolute; right: clamp(1rem, 4vw, 2.5rem); bottom: 0.2rem; font-size: 0.6rem; margin: 0; }
   .icon-btn { width: 38px; height: 38px; }
   .viz-controls button { min-height: 38px; padding: 0.4rem 0.75rem; }
   input[type="checkbox"] { width: 18px; height: 18px; }

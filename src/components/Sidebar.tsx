@@ -49,9 +49,9 @@ export default function Sidebar({
   return (
     <aside className={`sidebar ${open ? "open" : ""}`}>
       <div className="brand">
-        <div className="brand-mark">DS</div>
+        <div className="brand-mark">PC</div>
         <div className="brand-text">
-          <div className="brand-title">DS Coach</div>
+          <div className="brand-title">Prep Coach</div>
           <div className="brand-sub">Interactive Interview Prep</div>
         </div>
         <button className="sidebar-close" onClick={onClose} aria-label="Close menu">
