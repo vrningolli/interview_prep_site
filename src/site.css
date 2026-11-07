@@ -260,3 +260,10 @@
 @media (prefers-reduced-motion: reduce) {
   .preview-cell, .preview-chip, .preview-track div { transition: none; }
 }
+
+/* Phones: hero buttons never wrap — stack them full-width instead */
+.lp-btn { white-space: nowrap; }
+@media (max-width: 480px) {
+  .hero-ctas { flex-direction: column; }
+  .hero-ctas .lp-btn { width: 100%; flex: none; }
+}
