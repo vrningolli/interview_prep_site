@@ -9,6 +9,8 @@ import {
   FileText,
   GraduationCap,
   Map,
+  Pause,
+  Play,
   PlayCircle,
   RotateCcw,
   Sparkles,
@@ -18,6 +20,7 @@ import {
   Smartphone,
   Zap,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import rawContent from "../data/content.json";
 import type { Content } from "../types";
 import { COMPANY_ORDER, COMPANIES } from "../data/companies";
@@ -71,43 +74,86 @@ const LAB_POINTS = [
   "Agent Runner to try each lab with AI",
 ];
 
-/** A static preview of the Prep Coach visualizer, used as the hero illustration. */
+/** Frames of "insert 5 at the front": every element shifts right one slot, then 5 drops in. */
+const FRAMES: { cells: (number | null)[]; hot: number | null; line: 0 | 1 | 2; caption: string }[] = [
+  { cells: [10, 20, 30, 40, null], hot: null, line: 0, caption: "Goal: insert 5 at index 0 of a 4-element array." },
+  { cells: [10, 20, 30, 40, 40], hot: 4, line: 1, caption: "No free slot at the front — shift 40 right first." },
+  { cells: [10, 20, 30, 30, 40], hot: 3, line: 1, caption: "Shift 30 right." },
+  { cells: [10, 20, 20, 30, 40], hot: 2, line: 1, caption: "Shift 20 right." },
+  { cells: [10, 10, 20, 30, 40], hot: 1, line: 1, caption: "Shift 10 right — index 0 is now free." },
+  { cells: [5, 10, 20, 30, 40], hot: 0, line: 2, caption: "Write 5. Four moves for one insert — that's O(n)." },
+];
+
+/** A live, looping preview of the Prep Coach step-through visualizer (the hero illustration). */
 function HeroPreview() {
+  const [step, setStep] = useState(0);
+  const [playing, setPlaying] = useState(
+    () => !(typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches)
+  );
+
+  useEffect(() => {
+    if (!playing) return;
+    // Linger on the last frame, then loop.
+    const delay = step === FRAMES.length - 1 ? 2600 : 1150;
+    const t = window.setTimeout(() => setStep((s) => (s + 1) % FRAMES.length), delay);
+    return () => window.clearTimeout(t);
+  }, [playing, step]);
+
+  const frame = FRAMES[step];
+  const done = step === FRAMES.length - 1;
   return (
-    <div className="preview" aria-hidden="true">
+    <div className="preview">
       <div className="preview-bar">
         <span />
         <span />
         <span />
-        <em>Prep Coach · Array</em>
+        <em>Prep Coach · Array visualizer</em>
       </div>
       <div className="preview-body">
         <div className="preview-label">Insert at front — O(n)</div>
-        <div className="preview-cells">
-          {[5, 10, 20, 30, 40].map((v, i) => (
-            <div key={v} className={"preview-cell" + (i === 0 ? " is-new" : "")}>
-              <b>{v}</b>
+        <div className="preview-cells" aria-hidden="true">
+          {frame.cells.map((v, i) => (
+            <div
+              key={i}
+              className={
+                "preview-cell" + (v === null ? " is-empty" : "") + (frame.hot === i ? (done ? " is-new" : " is-hot") : "")
+              }
+            >
+              <b>{v ?? "·"}</b>
               <small>[{i}]</small>
             </div>
           ))}
         </div>
-        <div className="preview-code">
-          <code>
+        <p className="preview-caption" aria-live="polite">
+          {frame.caption}
+        </p>
+        <div className="preview-code" aria-hidden="true">
+          <code className={frame.line === 1 ? "on" : ""}>
             <span className="tok-k">for</span> (let i = n; i &gt; 0; i--) arr[i] = arr[i - 1];
           </code>
+          <code className={frame.line === 2 ? "on" : ""}>arr[0] = 5;</code>
         </div>
         <div className="preview-controls">
-          <span className="preview-play">▶ Play</span>
+          <button
+            type="button"
+            className="preview-play"
+            onClick={() => setPlaying((p) => !p)}
+            aria-label={playing ? "Pause preview" : "Play preview"}
+          >
+            {playing ? <Pause size={13} /> : <Play size={13} />} {playing ? "Pause" : "Play"}
+          </button>
           <div className="preview-track">
-            <div />
+            <div style={{ width: `${((step + 1) / FRAMES.length) * 100}%` }} />
           </div>
-          <span className="preview-step">Step 5 / 8</span>
+          <span className="preview-step">
+            Step {step + 1} / {FRAMES.length}
+          </span>
         </div>
       </div>
-      <div className="preview-chip chip-a">
+      <div className={"preview-chip chip-a" + (done ? " show" : "")}>
         <Check size={14} strokeWidth={3} /> Topic learned
       </div>
-      <div className="preview-chip chip-b">
+      <div className="preview-chip chip-b show">
         <Zap size={14} /> 3 reviews due
       </div>
     </div>
@@ -122,16 +168,16 @@ export default function Landing() {
           <span className="eyebrow">
             <Sparkles size={14} /> Interview prep + AI skills, in one place
           </span>
-          <h1>Prepare for coding interviews with confidence.</h1>
+          <h1>Prep Insights</h1>
           <p className="hero-lead">
             Prep Hub combines a visual data-structures &amp; algorithms coach with a hands-on AI engineering lab — so
             you can master the fundamentals and the tools modern teams use.
           </p>
           <div className="hero-ctas">
-            <a className="btn btn-primary" href="#prep">
+            <a className="lp-btn lp-primary" href="#prep">
               Start Prep Coach <ArrowRight size={17} />
             </a>
-            <a className="btn btn-secondary" href="ai-lab/">
+            <a className="lp-btn lp-secondary" href="ai-lab/">
               Explore AI Lab
             </a>
           </div>
@@ -244,7 +290,7 @@ export default function Landing() {
 
       <section className="stats-band" aria-label="By the numbers">
         {STATS.map((s) => (
-          <div className="stat" key={s.label}>
+          <div className="lp-stat" key={s.label}>
             <b>{s.value}</b>
             <span>{s.label}</span>
           </div>
@@ -255,10 +301,10 @@ export default function Landing() {
         <h2>Start preparing today</h2>
         <p>No account, no paywall. Open a topic and you're learning in seconds.</p>
         <div className="hero-ctas">
-          <a className="btn btn-light" href="#prep">
+          <a className="lp-btn lp-light" href="#prep">
             Start Prep Coach <ArrowRight size={17} />
           </a>
-          <a className="btn btn-outline-light" href="ai-lab/">
+          <a className="lp-btn lp-outline-light" href="ai-lab/">
             Explore AI Lab
           </a>
         </div>
