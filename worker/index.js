@@ -89,8 +89,10 @@ async function handleChat(request, env, kind = "agent") {
 }
 
 /** Product analytics: anonymous events written to Workers Analytics Engine.
-    Stored per event: name, detail, page, country, and one number. No IPs, no IDs. */
+    Stored per event: name, detail, page, country, one number, and a random anonymous
+    visitor ID generated in the browser (plus "new"/"returning"). No IPs, no accounts. */
 const EVENT_NAME = /^[a-z_]{2,32}$/;
+const VISITOR_ID = /^[a-f0-9-]{8,40}$/;
 
 export async function handleEvent(request, env) {
   if (request.method !== "POST") return json(405, { error: "Use POST." });
@@ -108,8 +110,11 @@ export async function handleEvent(request, env) {
   const path = typeof body.path === "string" ? body.path.slice(0, 100) : "";
   const value = Number.isFinite(body.value) ? body.value : 0;
   const country = (request.cf && request.cf.country) || "";
+  const vid = typeof body.vid === "string" && VISITOR_ID.test(body.vid) ? body.vid : "";
+  const kind = body.kind === "returning" ? "returning" : "new";
   if (env.EVENTS) {
-    env.EVENTS.writeDataPoint({ indexes: [event], blobs: [event, detail, path, country], doubles: [value] });
+    // blob order is part of the dataset's schema — scripts/stats.mjs reads blob1..blob6.
+    env.EVENTS.writeDataPoint({ indexes: [event], blobs: [event, detail, path, country, vid, kind], doubles: [value] });
   }
   return new Response(null, { status: 204 });
 }

@@ -40,7 +40,14 @@ function table(title, rows, cols) {
 }
 
 // _sample_interval accounts for Analytics Engine's sampling at high volume.
+// blob1 event · blob2 detail · blob3 page · blob4 country · blob5 visitor ID · blob6 new/returning.
+// Visitor counts are COUNT(DISTINCT) over sampled rows, so treat them as close estimates.
+const hasVid = `blob5 != ''`;
 const queries = [
+  ["Visitors", `SELECT COUNT(DISTINCT blob5) AS unique_visitors, SUM(_sample_interval) AS events FROM ${DATASET} WHERE ${since} AND ${hasVid}`, ["unique_visitors", "events"]],
+  ["New vs returning visitors", `SELECT blob6 AS kind, COUNT(DISTINCT blob5) AS visitors FROM ${DATASET} WHERE ${since} AND ${hasVid} GROUP BY kind`, ["kind", "visitors"]],
+  ["Daily active visitors", `SELECT toDate(timestamp) AS day, COUNT(DISTINCT blob5) AS visitors, SUM(_sample_interval) AS events FROM ${DATASET} WHERE ${since} AND ${hasVid} GROUP BY day ORDER BY day`, ["day", "visitors", "events"]],
+  ["Funnel (unique visitors)", `SELECT blob1 AS step, COUNT(DISTINCT blob5) AS visitors FROM ${DATASET} WHERE ${since} AND ${hasVid} AND blob1 IN ('page_view', 'tab_view', 'interview_started', 'tests_run', 'interview_finished') GROUP BY step ORDER BY visitors DESC`, ["step", "visitors"]],
   ["Events", `SELECT blob1 AS event, SUM(_sample_interval) AS count FROM ${DATASET} WHERE ${since} GROUP BY event ORDER BY count DESC`, ["event", "count"]],
   ["Daily page views", `SELECT toDate(timestamp) AS day, SUM(_sample_interval) AS views FROM ${DATASET} WHERE ${since} AND blob1 = 'page_view' GROUP BY day ORDER BY day`, ["day", "views"]],
   ["Prep Coach tabs", `SELECT blob2 AS tab, SUM(_sample_interval) AS views FROM ${DATASET} WHERE ${since} AND blob1 = 'tab_view' GROUP BY tab ORDER BY views DESC`, ["tab", "views"]],
