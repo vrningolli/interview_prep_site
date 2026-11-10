@@ -138,7 +138,7 @@ export const RUBRIC: Record<Mode, string[]> = {
 
 export const VERDICTS = ["Strong no hire", "No hire", "Lean hire", "Hire", "Strong hire"] as const;
 
-export const INTERVIEWER_NAME = "Alex";
+export const INTERVIEWER_NAME = "Veeru";
 
 export function problemTitle(mode: Mode, key: string): string {
   return mode === "coding"
