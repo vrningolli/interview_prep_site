@@ -25,6 +25,11 @@ export default function Privacy() {
         <li>a random ID created in your browser, so we can count unique and returning visitors</li>
       </ul>
       <p>
+        If you click <i>Upgrade to Pro</i>, we record that click (plan, billing period, currency and where you clicked)
+        and your answer to “is this price fair?”, in the same anonymous way. Payments aren't switched on yet, so nothing
+        is ever charged.
+      </p>
+      <p>
         We do <b>not</b> store names, emails, IP addresses or cookies, and we can't link the random ID to you. Events
         are not sent when your browser has <i>Do Not Track</i> turned on. They are stored in Cloudflare Workers
         Analytics Engine.

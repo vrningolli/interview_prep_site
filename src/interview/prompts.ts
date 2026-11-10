@@ -23,7 +23,13 @@ export interface CodingProblem {
   tests: TestCase[];
   normalize?: "sorted";
   harness?: string;
+  /** Python versions of the starter and (for classes) the test wrapper. */
+  pyStarter: string;
+  pyHarness?: string;
 }
+
+export type Language = "javascript" | "python";
+export const LANGUAGE_LABEL: Record<Language, string> = { javascript: "JavaScript", python: "Python" };
 
 export const CODING_PROBLEMS: CodingProblem[] = [
   {
@@ -38,6 +44,7 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     fnName: "twoSum",
     starter: "function twoSum(nums, target) {\n  \n}",
     normalize: "sorted",
+    pyStarter: "def twoSum(nums, target):\n    pass",
     tests: [
       { args: [[2, 7, 11, 15], 9], expected: [0, 1] },
       { args: [[3, 2, 4], 6], expected: [1, 2] },
@@ -57,6 +64,7 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     followUps: ["Odd-length string shortcut", "Return the minimum number of insertions to make it valid"],
     fnName: "isValid",
     starter: "function isValid(s) {\n  \n}",
+    pyStarter: "def isValid(s):\n    pass",
     tests: [
       { args: ["()"], expected: true },
       { args: ["()[]{}"], expected: true },
@@ -80,6 +88,7 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     fnName: "merge",
     starter: "function merge(intervals) {\n  \n}",
     normalize: "sorted",
+    pyStarter: "def merge(intervals):\n    pass",
     tests: [
       { args: [[[1, 3], [2, 6], [8, 10], [15, 18]]], expected: [[1, 6], [8, 10], [15, 18]] },
       { args: [[[1, 4], [4, 5]]], expected: [[1, 5]] },
@@ -100,6 +109,7 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     followUps: ["At most k distinct characters", "Return the substring itself"],
     fnName: "lengthOfLongestSubstring",
     starter: "function lengthOfLongestSubstring(s) {\n  \n}",
+    pyStarter: "def lengthOfLongestSubstring(s):\n    pass",
     tests: [
       { args: ["abcabcbb"], expected: 3 },
       { args: ["bbbbb"], expected: 1 },
@@ -122,6 +132,7 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     fnName: "topKFrequent",
     starter: "function topKFrequent(nums, k) {\n  \n}",
     normalize: "sorted",
+    pyStarter: "def topKFrequent(nums, k):\n    pass",
     tests: [
       { args: [[1, 1, 1, 2, 2, 3], 2], expected: [1, 2] },
       { args: [[1], 1], expected: [1] },
@@ -140,6 +151,7 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     followUps: ["Recursion depth on a huge grid — switch to iterative BFS", "Union-Find version for a stream of land additions"],
     fnName: "numIslands",
     starter: "function numIslands(grid) {\n  // grid[r][c] is \"1\" (land) or \"0\" (water)\n  \n}",
+    pyStarter: "def numIslands(grid):\n    # grid[r][c] is \"1\" (land) or \"0\" (water)\n    pass",
     tests: [
       { args: [[["1", "1", "0"], ["1", "0", "0"], ["0", "0", "1"]]], expected: 2 },
       { args: [[["1", "1", "1", "1", "0"], ["1", "1", "0", "1", "0"], ["1", "1", "0", "0", "0"], ["0", "0", "0", "0", "0"]]], expected: 1 },
@@ -160,6 +172,8 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     fnName: "__runLRU",
     starter: "class LRUCache {\n  constructor(capacity) {\n    \n  }\n\n  get(key) {\n    \n  }\n\n  put(key, value) {\n    \n  }\n}",
     harness: "function __runLRU(capacity, ops, args) {\n  const c = new LRUCache(capacity);\n  return ops.map((op, i) => (op === 'get' ? c.get(...args[i]) : (c.put(...args[i]), null)));\n}",
+    pyStarter: "class LRUCache:\n    def __init__(self, capacity):\n        pass\n\n    def get(self, key):\n        pass\n\n    def put(self, key, value):\n        pass",
+    pyHarness: "def __runLRU(capacity, ops, args):\n    c = LRUCache(capacity)\n    out = []\n    for op, a in zip(ops, args):\n        if op == 'get':\n            out.append(c.get(*a))\n        else:\n            c.put(*a)\n            out.append(None)\n    return out",
     tests: [
       {
         args: [2, ["put", "put", "get", "put", "get", "put", "get", "get", "get"], [[1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]],
@@ -183,6 +197,7 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     followUps: ["Return a valid order", "Minimum number of semesters"],
     fnName: "canFinish",
     starter: "function canFinish(numCourses, prerequisites) {\n  \n}",
+    pyStarter: "def canFinish(numCourses, prerequisites):\n    pass",
     tests: [
       { args: [2, [[1, 0]]], expected: true },
       { args: [2, [[1, 0], [0, 1]]], expected: false },
@@ -203,6 +218,7 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     followUps: ["Count the number of ways instead", "Why does greedy fail for [1, 3, 4] and amount 6?"],
     fnName: "coinChange",
     starter: "function coinChange(coins, amount) {\n  \n}",
+    pyStarter: "def coinChange(coins, amount):\n    pass",
     tests: [
       { args: [[1, 2, 5], 11], expected: 3 },
       { args: [[2], 3], expected: -1 },
@@ -222,6 +238,7 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     followUps: ["Characters are Unicode", "Return all minimum windows"],
     fnName: "minWindow",
     starter: "function minWindow(s, t) {\n  \n}",
+    pyStarter: "def minWindow(s, t):\n    pass",
     tests: [
       { args: ["ADOBECODEBANC", "ABC"], expected: "BANC" },
       { args: ["a", "a"], expected: "a" },
@@ -316,6 +333,8 @@ export interface Setup {
   company: CompanyKey | "general";
   level: Level;
   minutes: number;
+  /** Coding rounds only; older saved sessions have none (= JavaScript). */
+  language?: Language;
 }
 
 export const LEVELS: Record<Level, string> = { junior: "Junior / new grad", mid: "Mid-level", senior: "Senior" };
@@ -382,6 +401,7 @@ Hidden interviewer notes (never reveal directly):
     const p = CODING_PROBLEMS.find((x) => x.key === s.problemKey) ?? CODING_PROBLEMS[0];
     return `${shared}
 
+The candidate is coding in ${LANGUAGE_LABEL[s.language ?? "javascript"]}.
 The problem you already gave the candidate: "${p.title}" — ${p.statement} Example: ${p.examples}
 
 Run the interview through these phases, moving on when each is done:
@@ -431,7 +451,8 @@ export function openingMessage(s: Setup): string {
   if (s.mode === "coding") {
     const p = CODING_PROBLEMS.find((x) => x.key === s.problemKey) ?? CODING_PROBLEMS[0];
     const sig = p.harness ? "the `LRUCache` class" : `\`${p.fnName}\``;
-    return `${hi}\n\nHere's the problem — **${p.title}**:\n\n${p.statement}\n\n**Example:** ${p.examples}\n\nTake a moment to read it. Feel free to ask clarifying questions, then walk me through your approach before you code. Implement ${sig} in the editor on the right — **Run tests** checks it against hidden test cases.`;
+    const lang = LANGUAGE_LABEL[s.language ?? "javascript"];
+    return `${hi}\n\nHere's the problem — **${p.title}**:\n\n${p.statement}\n\n**Example:** ${p.examples}\n\nTake a moment to read it. Feel free to ask clarifying questions, then walk me through your approach before you code. Implement ${sig} in ${lang} in the editor on the right — **Run tests** checks it against hidden test cases.`;
   }
   const d = DESIGNS.find((x) => x.key === s.problemKey) ?? DESIGNS[0];
   return `${hi}\n\nToday I'd like you to **design ${d.title.toLowerCase()}**. ${d.prompt}\n\nYou drive — think out loud, and use the scratchpad on the right for requirements, numbers and your component list. Where would you like to start?`;

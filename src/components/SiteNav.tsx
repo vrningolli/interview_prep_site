@@ -20,6 +20,7 @@ export default function SiteNav({ route }: { route: Route }) {
           Prep Coach
         </a>
         <a href="ai-lab/">AI Lab</a>
+        <a href="#pricing">Pricing</a>
       </nav>
       <span className="made-by">
         made with <span className="heart" aria-label="love">♥</span> · Virupaksh N

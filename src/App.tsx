@@ -3,6 +3,7 @@ import SiteNav, { type Route } from "./components/SiteNav";
 import Landing from "./components/Landing";
 import PrepCoach from "./PrepCoach";
 import Privacy from "./components/Privacy";
+import { UpgradeModal } from "./components/Pricing";
 import { track } from "./analytics";
 
 /** Hash routing keeps the site a plain static deploy: "" = landing, "#prep" = Prep Coach. */
@@ -21,7 +22,9 @@ export default function App() {
   useEffect(() => {
     const onHash = () => {
       setRoute(routeFromHash());
-      window.scrollTo({ top: 0 });
+      // The landing page may still be mounting (e.g. coming from Prep Coach), so scroll on the next frame.
+      if (location.hash === "#pricing") setTimeout(() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" }), 60);
+      else window.scrollTo({ top: 0 });
     };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
@@ -46,6 +49,7 @@ export default function App() {
     <div className={`site site-${route}`}>
       <SiteNav route={route} />
       {route === "prep" ? <PrepCoach /> : route === "privacy" ? <Privacy /> : <Landing />}
+      <UpgradeModal />
     </div>
   );
 }

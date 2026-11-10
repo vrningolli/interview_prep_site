@@ -37,7 +37,10 @@ export type EventName =
   | "claude_key_checked"
   | "scorecard_shared"
   | "task_done"
-  | "onboarded";
+  | "onboarded"
+  | "pricing_viewed"
+  | "upgrade_clicked"
+  | "price_feedback";
 
 /** Events that count as practising, for the streak on the Today screen. */
 const PRACTICE = new Set<EventName>(["design_opened", "interview_started", "interview_finished", "tests_run", "task_done"]);

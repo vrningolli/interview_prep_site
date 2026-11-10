@@ -28,6 +28,14 @@ import Mascot from "./Mascot";
 import type { Content } from "../types";
 import { COMPANY_ORDER, COMPANIES } from "../data/companies";
 import { DESIGNS } from "../data/systemDesign";
+import { PricingCards } from "./Pricing";
+
+/** Direct visits to /#pricing land on the pricing section. */
+function useScrollToPricing() {
+  useEffect(() => {
+    if (location.hash === "#pricing") setTimeout(() => document.getElementById("pricing")?.scrollIntoView(), 60);
+  }, []);
+}
 
 const content = rawContent as unknown as Content;
 
@@ -175,6 +183,7 @@ function HeroPreview() {
 }
 
 export default function Landing() {
+  useScrollToPricing();
   return (
     <div className="landing">
       <Mascot />
@@ -335,6 +344,15 @@ export default function Landing() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="block" id="pricing">
+        <div className="block-head">
+          <span className="kicker">Pricing</span>
+          <h2>Start free. Go Pro when you're ready.</h2>
+          <p>Everything you need to prepare is free. Pro adds a Claude-powered interviewer and deeper feedback.</p>
+        </div>
+        <PricingCards source="landing" />
       </section>
 
       <section className="stats-band" aria-label="By the numbers">

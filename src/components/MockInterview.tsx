@@ -15,6 +15,7 @@ import {
   Mic,
   MicOff,
   Share2,
+  Sparkles,
   Volume2,
   VolumeX,
   KeyRound,
@@ -31,6 +32,8 @@ import { CLAUDE_MODELS, LlmError, ProviderConfig, chatStream, checkClaudeKey } f
 import {
   BEHAVIORAL_QUESTIONS,
   CODING_PROBLEMS,
+  LANGUAGE_LABEL,
+  Language,
   MODE_LABEL,
   LEVELS,
   Level,
@@ -48,12 +51,14 @@ import {
   testNote,
 } from "../interview/prompts";
 import { runInterviewTests } from "../interview/tests";
+import { pythonReady, warmPython } from "../lab/pyrunner";
 import { track } from "../analytics";
 import { Session, loadKey, newId, saveKey, useProviderSettings, useSessions } from "../interview/store";
 import { canDictate, canSpeak, speak, stopSpeaking, useDictation } from "../interview/voice";
 import { shareScorecard } from "../interview/share";
 import { PREP_STORAGE_KEY } from "../prep/store";
 import { useProfile } from "../profile";
+import { openUpgrade } from "./Pricing";
 import "../sd-mock.css";
 
 export interface MockPreset {
@@ -66,7 +71,10 @@ const BUDGET = { free: { turn: 11_000, report: 9_000 }, claude: { turn: 80_000, 
 
 /** What the editor/notes panel starts with for each round. */
 function startingPad(setup: Setup): string {
-  if (setup.mode === "coding") return CODING_PROBLEMS.find((p) => p.key === setup.problemKey)?.starter ?? "";
+  if (setup.mode === "coding") {
+    const p = CODING_PROBLEMS.find((x) => x.key === setup.problemKey);
+    return (setup.language === "python" ? p?.pyStarter : p?.starter) ?? "";
+  }
   if (setup.mode === "sd") return "";
   // Behavioral: the candidate's own story bank from Company Prep, as private notes.
   let stories: { title: string; situation?: string; action?: string; result?: string }[] = [];
@@ -201,6 +209,21 @@ function SetupView({
   const [profile] = useProfile();
   const [level, setLevel] = useState<Level>(profile.level);
   const [minutes, setMinutes] = useState(45);
+  const [language, setLanguage] = useState<Language>(() => {
+    try {
+      return localStorage.getItem("prep-mock-language") === "python" ? "python" : "javascript";
+    } catch {
+      return "javascript";
+    }
+  });
+  const pickLanguage = (l: Language) => {
+    setLanguage(l);
+    try {
+      localStorage.setItem("prep-mock-language", l);
+    } catch {
+      /* ignore */
+    }
+  };
   const [keyState, setKeyState] = useState<{ kind: "idle" | "checking" | "ok" | "err"; text?: string }>({ kind: "idle" });
 
   // A "Mock interview this" click from System Design arrives as a preset; consume it once.
@@ -320,6 +343,18 @@ function SetupView({
               ))}
             </select>
           </label>
+          {mode === "coding" && (
+            <label className="mfield">
+              <span>Language</span>
+              <select className="field" value={language} onChange={(e) => pickLanguage(e.target.value as Language)}>
+                {(Object.keys(LANGUAGE_LABEL) as Language[]).map((l) => (
+                  <option key={l} value={l}>
+                    {LANGUAGE_LABEL[l]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label className="mfield">
             <span>Length</span>
             <select className="field" value={minutes} onChange={(e) => setMinutes(Number(e.target.value))}>
@@ -391,6 +426,7 @@ function SetupView({
             </div>
             {keyState.text && <p className={keyState.kind === "ok" ? "ok" : "gap"}>{keyState.text}</p>}
             <p className="mock-fine">
+              No API key? <button className="linky" onClick={() => openUpgrade("mock_key")}>Pro includes Claude</button>.
               Your key goes straight from this browser to Anthropic — this site never sees it. It's kept for this tab only
               unless you tick “Remember”.
             </p>
@@ -398,12 +434,27 @@ function SetupView({
         )}
       </section>
 
+      <button className="mock-pro" onClick={() => openUpgrade("mock_setup")}>
+        <Sparkles size={16} />
+        <span>
+          <b>Pro:</b> Veeru on Claude with no API key, unlimited interviews and deeper scorecards.
+        </span>
+        <span className="mock-pro-cta">See Pro</span>
+      </button>
+
       <div className="mock-start">
         <button
           className="btn-primary mock-go"
           disabled={!canStart}
           onClick={() =>
-            onStart({ mode, problemKey: problemKey === "random" ? randomProblem(mode) : problemKey, company, level, minutes })
+            onStart({
+              mode,
+              problemKey: problemKey === "random" ? randomProblem(mode) : problemKey,
+              company,
+              level,
+              minutes,
+              ...(mode === "coding" ? { language } : {}),
+            })
           }
         >
           Start interview
@@ -483,6 +534,13 @@ function Room({
   };
   useEffect(() => () => stopSpeaking(), []);
   const isCoding = setup.mode === "coding";
+  const language: Language = setup.language ?? "javascript";
+  const isPython = isCoding && language === "python";
+  const indent = isPython ? "    " : "  ";
+  // Start downloading Python as soon as a Python interview opens, so the first test run is quick.
+  useEffect(() => {
+    if (isPython) warmPython();
+  }, [isPython]);
   const note = (run: RunSummary | undefined, code: string) => (isCoding ? testNote(run, code) : "");
   const [error, setError] = useState<LlmError | null>(null);
   const [now, setNow] = useState(Date.now());
@@ -545,7 +603,7 @@ function Room({
   const runTestsNow = async (): Promise<RunSummary> => {
     setTesting(true);
     try {
-      const run = await runInterviewTests(setup.problemKey, session.scratchpad);
+      const run = await runInterviewTests(setup.problemKey, session.scratchpad, language);
       update((s) => ({ ...s, lastRun: run }));
       track("tests_run", setup.problemKey, run.total ? run.passed / run.total : 0);
       return run;
@@ -568,7 +626,7 @@ function Room({
     let acc = "";
     try {
       // Grade the final code, not whatever was last run.
-      const finalRun = isCoding && session.scratchpad.trim() ? await runInterviewTests(setup.problemKey, session.scratchpad) : session.lastRun;
+      const finalRun = isCoding && session.scratchpad.trim() ? await runInterviewTests(setup.problemKey, session.scratchpad, language) : session.lastRun;
       const finalNote = isCoding ? `Final hidden tests: ${testNote(finalRun, session.scratchpad).replace(/^Latest test run: /, "")}` : "";
       await chatStream(cfg, reportRequest(setup, session.turns, session.scratchpad, budget.report, finalNote), (d) => {
         acc += d;
@@ -679,12 +737,12 @@ function Room({
         <section className="room-pad">
           <div className="room-pad-head">
             <div>
-              <b>{isCoding ? "Your code (JavaScript)" : setup.mode === "sd" ? "Your design notes" : "Your notes"}</b>
+              <b>{isCoding ? `Your code (${LANGUAGE_LABEL[language]})` : setup.mode === "sd" ? "Your design notes" : "Your notes"}</b>
               <span>{setup.mode === "behavioral" ? "Private — the interviewer only hears your answers." : "The interviewer sees this with every message."}</span>
             </div>
             {isCoding && (
               <button className="btn" onClick={runTestsNow} disabled={testing || !session.scratchpad.trim()}>
-                <FlaskConical size={15} /> {testing ? "Running…" : "Run tests"}
+                <FlaskConical size={15} /> {testing ? (isPython && !pythonReady() ? "Loading Python…" : "Running…") : "Run tests"}
               </button>
             )}
           </div>
@@ -708,9 +766,9 @@ function Room({
                 e.preventDefault();
                 const el = e.currentTarget;
                 const { selectionStart: a, selectionEnd: b, value } = el;
-                const v = value.slice(0, a) + "  " + value.slice(b);
+                const v = value.slice(0, a) + indent + value.slice(b);
                 update((s) => ({ ...s, scratchpad: v }));
-                requestAnimationFrame(() => el.setSelectionRange(a + 2, a + 2));
+                requestAnimationFrame(() => el.setSelectionRange(a + indent.length, a + indent.length));
               }
             }}
           />

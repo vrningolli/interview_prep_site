@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Tab, Topic } from "../types";
 import { useReviewItems, dueNow } from "../review/store";
+import { hasProInterest, openUpgrade } from "./Pricing";
 
 const TABS: { key: Tab; label: string; Icon: LucideIcon }[] = [
   { key: "today", label: "Today", Icon: Sun },
@@ -146,6 +147,9 @@ export default function Sidebar({
       )}
 
       <div className="sidebar-footer">
+        <button className={`upgrade-btn ${hasProInterest() ? "noted" : ""}`} onClick={() => openUpgrade("sidebar")}>
+          <Sparkles size={15} /> {hasProInterest() ? "Pro: you're on the early list" : "Upgrade to Pro"}
+        </button>
         <div className="progress-wrap">
           <div className="progress-row">
             <span className="progress-label">Progress</span>
