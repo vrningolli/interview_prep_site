@@ -3,7 +3,7 @@
 import { useLocalStorage } from "../state";
 import type { ProviderKind } from "./llm";
 import { DEFAULT_CLAUDE_MODEL } from "./llm";
-import type { Scorecard, Setup, Turn } from "./prompts";
+import type { RunSummary, Scorecard, Setup, Turn } from "./prompts";
 
 export interface Session {
   id: string;
@@ -15,6 +15,8 @@ export interface Session {
   scorecard?: Scorecard;
   rawReport?: string;
   provider: ProviderKind;
+  /** Latest hidden-test run (coding rounds). */
+  lastRun?: RunSummary;
 }
 
 const MAX_HISTORY = 25;

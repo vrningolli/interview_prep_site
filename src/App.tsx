@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import SiteNav, { type Route } from "./components/SiteNav";
 import Landing from "./components/Landing";
 import PrepCoach from "./PrepCoach";
+import { track } from "./analytics";
 
 /** Hash routing keeps the site a plain static deploy: "" = landing, "#prep" = Prep Coach. */
 const routeFromHash = (): Route => (location.hash.startsWith("#prep") ? "prep" : "home");
@@ -25,6 +26,7 @@ export default function App() {
 
   useEffect(() => {
     document.title = TITLES[route];
+    track("page_view", route);
   }, [route]);
 
   // The whole site is light-only (no dark theme).

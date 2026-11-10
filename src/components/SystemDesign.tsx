@@ -1,6 +1,6 @@
 /* System Design track: interview framework, building blocks, numbers + estimator,
    and classic design walkthroughs that hand off to the AI mock interviewer. */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Blocks, Calculator, Check, ChevronLeft, ListOrdered, Mic, Network } from "lucide-react";
 import {
@@ -17,6 +17,7 @@ import {
 } from "../data/systemDesign";
 import { useStoredSet } from "../state";
 import "../sd-mock.css";
+import { track } from "../analytics";
 
 type View = "designs" | "framework" | "concepts" | "numbers";
 
@@ -42,6 +43,10 @@ export default function SystemDesign({
   const { set: practiced, toggle: togglePracticed } = useStoredSet("sd-practiced");
 
   const design = DESIGNS.find((d) => d.key === openDesign);
+
+  useEffect(() => {
+    if (openDesign) track("design_opened", openDesign);
+  }, [openDesign]);
   const done = DESIGNS.filter((d) => practiced.has(d.key)).length;
 
   const showConcept = (key: string) => {

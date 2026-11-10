@@ -13,6 +13,9 @@
   },
   // Cloudflare Workers AI — free daily allowance, no API key needed.
   "ai": { "binding": "AI" },
+  // Anonymous product analytics (POST /api/event). The dataset is created on first write.
+  // Read it with `npm run stats` (needs CF_ACCOUNT_ID and CF_API_TOKEN).
+  "analytics_engine_datasets": [{ "binding": "EVENTS", "dataset": "prep_hub_events" }],
   // Per-visitor limit on free-model runs: 5 per minute per IP.
   "ratelimits": [
     { "name": "RATE_LIMITER", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } },

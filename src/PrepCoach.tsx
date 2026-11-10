@@ -12,6 +12,7 @@ import CheatSheet from "./components/CheatSheet";
 import CompanyPrep from "./components/CompanyPrep";
 import SystemDesign from "./components/SystemDesign";
 import MockInterview, { MockPreset } from "./components/MockInterview";
+import { track } from "./analytics";
 
 const content = rawContent as unknown as Content;
 
@@ -51,6 +52,10 @@ export default function PrepCoach() {
     document.documentElement.setAttribute("data-theme", "light");
   }, []);
 
+  useEffect(() => {
+    track("tab_view", tab);
+  }, [tab]);
+
   const clearPreset = useCallback(() => setMockPreset(null), []);
 
   const topic: Topic | undefined = content.topics.find((t) => t.key === topicKey);
@@ -87,6 +92,7 @@ export default function PrepCoach() {
 
   /** System Design → "Mock interview this": jump to the mock tab with that design preselected. */
   const mockDesign = (designKey: string) => {
+    track("mock_from_design", designKey);
     setMockPreset({ mode: "sd", problemKey: designKey });
     setTab("mock");
     mainRef.current?.scrollTo({ top: 0 });

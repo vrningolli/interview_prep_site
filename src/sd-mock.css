@@ -247,3 +247,14 @@
   padding: 0.08rem 0.45rem; border-radius: 999px; color: #fff;
   background: linear-gradient(90deg, var(--primary), #7c3aed);
 }
+
+/* hidden-test runner inside the interview */
+.room-pad-head { align-items: center; }
+.room-pad-head > div { display: flex; flex-direction: column; gap: 0.1rem; }
+.test-panel { border-top: 1px solid var(--border); padding: 0.65rem 0.9rem; font-size: 0.85rem; background: var(--surface); }
+.test-panel-head { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
+.test-panel.pass .test-panel-head { color: var(--accent); }
+.test-panel.fail .test-panel-head { color: var(--danger); }
+.test-stale { font-size: 0.72rem; font-weight: 700; color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, transparent); padding: 0.05rem 0.5rem; border-radius: 999px; }
+.test-line { margin: 0.35rem 0 0; font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.78rem; color: var(--text-2); overflow-wrap: anywhere; }
+.report > .test-panel { border: 1px solid var(--border); border-radius: var(--radius-sm); }

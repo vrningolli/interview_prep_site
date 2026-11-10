@@ -5,7 +5,7 @@
  * assets binding; only /api/* reaches this code (see run_worker_first in
  * wrangler.jsonc). Two APIs share Cloudflare Workers AI's free daily allowance:
  * the AI Lab's agent runner (/api/agent/*) and Prep Coach's mock interviewer
- * (/api/interview/*).
+ * (/api/interview/*). /api/event records anonymous product analytics.
  *
  * Abuse guards, since anyone can call a public endpoint:
  *   - same-origin browsers only (Origin must match this site)
@@ -88,11 +88,38 @@ async function handleChat(request, env, kind = "agent") {
   }
 }
 
+/** Product analytics: anonymous events written to Workers Analytics Engine.
+    Stored per event: name, detail, page, country, and one number. No IPs, no IDs. */
+const EVENT_NAME = /^[a-z_]{2,32}$/;
+
+export async function handleEvent(request, env) {
+  if (request.method !== "POST") return json(405, { error: "Use POST." });
+  const origin = request.headers.get("origin");
+  if (origin && origin !== new URL(request.url).origin) return json(403, { error: "Cross-origin requests are not allowed." });
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json(400, { error: "Body must be JSON." });
+  }
+  const event = body && body.event;
+  if (typeof event !== "string" || !EVENT_NAME.test(event)) return json(400, { error: "Bad event name." });
+  const detail = typeof body.detail === "string" ? body.detail.slice(0, 80) : "";
+  const path = typeof body.path === "string" ? body.path.slice(0, 100) : "";
+  const value = Number.isFinite(body.value) ? body.value : 0;
+  const country = (request.cf && request.cf.country) || "";
+  if (env.EVENTS) {
+    env.EVENTS.writeDataPoint({ indexes: [event], blobs: [event, detail, path, country], doubles: [value] });
+  }
+  return new Response(null, { status: 204 });
+}
+
 export default {
   async fetch(request, env) {
     const { pathname } = new URL(request.url);
     if (pathname === "/api/agent/chat") return handleChat(request, env, "agent");
     if (pathname === "/api/interview/chat") return handleChat(request, env, "interview");
+    if (pathname === "/api/event") return handleEvent(request, env);
     if (pathname === "/api/interview/status") return json(200, { model: MODEL.split("/").pop(), available: !!env.AI });
     if (pathname === "/api/agent/status") return json(200, { model: MODEL.split("/").pop(), available: !!env.AI });
     if (pathname.startsWith("/api/")) return json(404, { error: "Not found." });

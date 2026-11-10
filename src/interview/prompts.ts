@@ -3,6 +3,7 @@
 import { DESIGNS } from "../data/systemDesign";
 import { COMPANIES, CompanyKey } from "../data/companies";
 import type { ChatMessage } from "./llm";
+import type { TestCase } from "../lab/runner";
 
 export type Mode = "coding" | "sd";
 export type Level = "junior" | "mid" | "senior";
@@ -16,6 +17,12 @@ export interface CodingProblem {
   examples: string;
   optimal: string;
   followUps: string[];
+  /** Function the tests call. With `harness`, a wrapper defined there (e.g. for classes). */
+  fnName: string;
+  starter: string;
+  tests: TestCase[];
+  normalize?: "sorted";
+  harness?: string;
 }
 
 export const CODING_PROBLEMS: CodingProblem[] = [
@@ -28,6 +35,16 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     examples: "nums = [2, 7, 11, 15], target = 9 → [0, 1]",
     optimal: "One pass with a hash map value → index: for each x, check whether target − x is already in the map. O(n) time, O(n) space. Brute force is O(n²).",
     followUps: ["What if the array is sorted? (two pointers, O(1) space)", "Return all unique pairs instead of one"],
+    fnName: "twoSum",
+    starter: "function twoSum(nums, target) {\n  \n}",
+    normalize: "sorted",
+    tests: [
+      { args: [[2, 7, 11, 15], 9], expected: [0, 1] },
+      { args: [[3, 2, 4], 6], expected: [1, 2] },
+      { args: [[3, 3], 6], expected: [0, 1] },
+      { args: [[-1, -2, -3, -4, -5], -8], expected: [2, 4] },
+      { args: [[0, 4, 3, 0], 0], expected: [0, 3] },
+    ],
   },
   {
     key: "valid-parentheses",
@@ -38,6 +55,18 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     examples: '"([]{})" → true, "(]" → false, "([)]" → false',
     optimal: "Stack: push openers; on a closer, the stack top must be its matching opener. Valid if the stack ends empty. O(n) time and space.",
     followUps: ["Odd-length string shortcut", "Return the minimum number of insertions to make it valid"],
+    fnName: "isValid",
+    starter: "function isValid(s) {\n  \n}",
+    tests: [
+      { args: ["()"], expected: true },
+      { args: ["()[]{}"], expected: true },
+      { args: ["(]"], expected: false },
+      { args: ["([)]"], expected: false },
+      { args: ["{[]}"], expected: true },
+      { args: [""], expected: true },
+      { args: ["(("], expected: false },
+      { args: ["]"], expected: false },
+    ],
   },
   {
     key: "merge-intervals",
@@ -48,6 +77,17 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     examples: "[[1,3],[2,6],[8,10],[15,18]] → [[1,6],[8,10],[15,18]]",
     optimal: "Sort by start; walk the list, extending the last merged interval when the next start ≤ its end. O(n log n) time, O(n) output.",
     followUps: ["Insert one new interval into an already-sorted list in O(n)", "Do touching intervals like [1,2],[2,3] merge?"],
+    fnName: "merge",
+    starter: "function merge(intervals) {\n  \n}",
+    normalize: "sorted",
+    tests: [
+      { args: [[[1, 3], [2, 6], [8, 10], [15, 18]]], expected: [[1, 6], [8, 10], [15, 18]] },
+      { args: [[[1, 4], [4, 5]]], expected: [[1, 5]] },
+      { args: [[[1, 4], [0, 4]]], expected: [[0, 4]] },
+      { args: [[[1, 4], [2, 3]]], expected: [[1, 4]] },
+      { args: [[[5, 6]]], expected: [[5, 6]] },
+      { args: [[[2, 3], [4, 5], [6, 7], [8, 9], [1, 10]]], expected: [[1, 10]] },
+    ],
   },
   {
     key: "longest-substring",
@@ -58,6 +98,17 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     examples: '"abcabcbb" → 3 ("abc"), "bbbbb" → 1, "pwwkew" → 3',
     optimal: "Sliding window with a map char → last index; when a repeat is inside the window, move left to lastIndex + 1. O(n) time, O(alphabet) space.",
     followUps: ["At most k distinct characters", "Return the substring itself"],
+    fnName: "lengthOfLongestSubstring",
+    starter: "function lengthOfLongestSubstring(s) {\n  \n}",
+    tests: [
+      { args: ["abcabcbb"], expected: 3 },
+      { args: ["bbbbb"], expected: 1 },
+      { args: ["pwwkew"], expected: 3 },
+      { args: [""], expected: 0 },
+      { args: [" "], expected: 1 },
+      { args: ["dvdf"], expected: 3 },
+      { args: ["abba"], expected: 2 },
+    ],
   },
   {
     key: "top-k-frequent",
@@ -68,6 +119,15 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     examples: "nums = [1,1,1,2,2,3], k = 2 → [1, 2]",
     optimal: "Count with a hash map, then a size-k min-heap (O(n log k)) or bucket sort by frequency (O(n)).",
     followUps: ["Streaming input that doesn't fit in memory", "Break ties by value"],
+    fnName: "topKFrequent",
+    starter: "function topKFrequent(nums, k) {\n  \n}",
+    normalize: "sorted",
+    tests: [
+      { args: [[1, 1, 1, 2, 2, 3], 2], expected: [1, 2] },
+      { args: [[1], 1], expected: [1] },
+      { args: [[4, 4, 4, 5, 5, 6, 6, 6, 6], 2], expected: [4, 6] },
+      { args: [[4, 1, -1, 2, -1, 2, 3], 2], expected: [-1, 2] },
+    ],
   },
   {
     key: "number-of-islands",
@@ -75,9 +135,18 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     difficulty: "Medium",
     topic: "bfsdfs",
     statement: "Given a 2-D grid of '1' (land) and '0' (water), count the islands. An island is land connected horizontally or vertically.",
-    examples: "[[1,1,0],[1,0,0],[0,0,1]] → 2",
+    examples: '[["1","1","0"],["1","0","0"],["0","0","1"]] → 2',
     optimal: "Scan cells; on unvisited land, increment the count and flood-fill (DFS/BFS) marking the island visited. O(rows × cols) time.",
     followUps: ["Recursion depth on a huge grid — switch to iterative BFS", "Union-Find version for a stream of land additions"],
+    fnName: "numIslands",
+    starter: "function numIslands(grid) {\n  // grid[r][c] is \"1\" (land) or \"0\" (water)\n  \n}",
+    tests: [
+      { args: [[["1", "1", "0"], ["1", "0", "0"], ["0", "0", "1"]]], expected: 2 },
+      { args: [[["1", "1", "1", "1", "0"], ["1", "1", "0", "1", "0"], ["1", "1", "0", "0", "0"], ["0", "0", "0", "0", "0"]]], expected: 1 },
+      { args: [[["1", "1", "0", "0", "0"], ["1", "1", "0", "0", "0"], ["0", "0", "1", "0", "0"], ["0", "0", "0", "1", "1"]]], expected: 3 },
+      { args: [[["0"]]], expected: 0 },
+      { args: [[["1", "0", "1", "0", "1"]]], expected: 3 },
+    ],
   },
   {
     key: "lru-cache",
@@ -88,6 +157,20 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     examples: "capacity 2: put(1,1), put(2,2), get(1)=1, put(3,3) evicts 2, get(2)=-1",
     optimal: "Hash map key → node of a doubly linked list ordered by recency; move to front on access, evict from the tail. (In JS a Map's insertion order also works.)",
     followUps: ["Make it thread-safe", "LFU instead of LRU"],
+    fnName: "__runLRU",
+    starter: "class LRUCache {\n  constructor(capacity) {\n    \n  }\n\n  get(key) {\n    \n  }\n\n  put(key, value) {\n    \n  }\n}",
+    harness: "function __runLRU(capacity, ops, args) {\n  const c = new LRUCache(capacity);\n  return ops.map((op, i) => (op === 'get' ? c.get(...args[i]) : (c.put(...args[i]), null)));\n}",
+    tests: [
+      {
+        args: [2, ["put", "put", "get", "put", "get", "put", "get", "get", "get"], [[1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]],
+        expected: [null, null, 1, null, -1, null, -1, 3, 4],
+      },
+      { args: [1, ["put", "put", "get", "get"], [[1, 1], [2, 2], [1], [2]]], expected: [null, null, -1, 2] },
+      {
+        args: [2, ["put", "put", "put", "put", "get", "get"], [[1, 1], [2, 2], [1, 10], [3, 3], [2], [1]]],
+        expected: [null, null, null, null, -1, 10],
+      },
+    ],
   },
   {
     key: "course-schedule",
@@ -98,6 +181,16 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     examples: "n = 2, [[1,0]] → true; n = 2, [[1,0],[0,1]] → false",
     optimal: "It's cycle detection in a directed graph: Kahn's topological sort (BFS on in-degree 0) or DFS with three colours. O(V + E).",
     followUps: ["Return a valid order", "Minimum number of semesters"],
+    fnName: "canFinish",
+    starter: "function canFinish(numCourses, prerequisites) {\n  \n}",
+    tests: [
+      { args: [2, [[1, 0]]], expected: true },
+      { args: [2, [[1, 0], [0, 1]]], expected: false },
+      { args: [3, []], expected: true },
+      { args: [4, [[1, 0], [2, 1], [3, 2]]], expected: true },
+      { args: [3, [[0, 1], [1, 2], [2, 0]]], expected: false },
+      { args: [1, [[0, 0]]], expected: false },
+    ],
   },
   {
     key: "coin-change",
@@ -108,6 +201,15 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     examples: "coins = [1, 2, 5], amount = 11 → 3 (5 + 5 + 1)",
     optimal: "Bottom-up DP: dp[x] = 1 + min(dp[x − c]) over coins; dp[0] = 0. O(amount × coins) time, O(amount) space. Greedy fails for some coin sets.",
     followUps: ["Count the number of ways instead", "Why does greedy fail for [1, 3, 4] and amount 6?"],
+    fnName: "coinChange",
+    starter: "function coinChange(coins, amount) {\n  \n}",
+    tests: [
+      { args: [[1, 2, 5], 11], expected: 3 },
+      { args: [[2], 3], expected: -1 },
+      { args: [[1], 0], expected: 0 },
+      { args: [[1, 3, 4], 6], expected: 2 },
+      { args: [[186, 419, 83, 408], 6249], expected: 20 },
+    ],
   },
   {
     key: "min-window",
@@ -118,6 +220,15 @@ export const CODING_PROBLEMS: CodingProblem[] = [
     examples: 's = "ADOBECODEBANC", t = "ABC" → "BANC"',
     optimal: "Sliding window with need/have counts: expand right until all needed chars are covered, then shrink left while still valid, tracking the best. O(|s| + |t|).",
     followUps: ["Characters are Unicode", "Return all minimum windows"],
+    fnName: "minWindow",
+    starter: "function minWindow(s, t) {\n  \n}",
+    tests: [
+      { args: ["ADOBECODEBANC", "ABC"], expected: "BANC" },
+      { args: ["a", "a"], expected: "a" },
+      { args: ["a", "aa"], expected: "" },
+      { args: ["ab", "b"], expected: "b" },
+      { args: ["aa", "aa"], expected: "aa" },
+    ],
   },
 ];
 
@@ -164,7 +275,7 @@ How you behave:
 - Ask one question at a time, then wait for the candidate.
 - Never hand over the solution or write the code/design for them. If they are stuck for two turns, give the smallest useful hint, and make hints more specific only if they stay stuck.
 - Probe their reasoning: ask "why", ask about trade-offs, ask what could go wrong.
-- Each candidate message ends with a [context] note showing elapsed time and their current scratchpad. Use it to pace the interview and review their work, but do not mention the note itself.
+- Each candidate message ends with a [context] note showing elapsed time, their current scratchpad and, in coding rounds, their latest test run. Use it to pace the interview and review their work, but do not mention the note itself.
 - Write plain conversational text. Use short Markdown code spans only when quoting code.`;
 
   if (s.mode === "coding") {
@@ -176,7 +287,7 @@ The problem you already gave the candidate: "${p.title}" — ${p.statement} Exam
 Run the interview through these phases, moving on when each is done:
 1. Clarifying questions — answer them briefly and precisely.
 2. Approach — ask them to explain the approach and its complexity before coding. Push back on a brute-force idea by asking if they can do better.
-3. Coding — let them write code in their scratchpad. When they share code, review it like an interviewer: point at bugs by asking about a specific input rather than fixing it.
+3. Coding — let them write code in their scratchpad. They can press "Run tests" to run hidden test cases. When code fails a test, point them at the failing input with a question rather than fixing it. Passing tests is not the end: still ask them to explain and test by hand.
 4. Testing — ask them to walk through an example and name edge cases.
 5. Complexity and follow-ups — confirm time/space complexity, then ask one follow-up if time allows.
 When about 5 minutes remain, start wrapping up. If the candidate says they are done, thank them and tell them they can press "End & get feedback".
@@ -215,7 +326,8 @@ export function openingMessage(s: Setup): string {
   const hi = `Hi! I'm ${INTERVIEWER_NAME}, an engineer${where}. Thanks for making time today. We have about ${s.minutes} minutes.`;
   if (s.mode === "coding") {
     const p = CODING_PROBLEMS.find((x) => x.key === s.problemKey) ?? CODING_PROBLEMS[0];
-    return `${hi}\n\nHere's the problem — **${p.title}**:\n\n${p.statement}\n\n**Example:** ${p.examples}\n\nTake a moment to read it. Feel free to ask clarifying questions, then walk me through your approach before you code. Use the scratchpad on the right for your code.`;
+    const sig = p.harness ? "the `LRUCache` class" : `\`${p.fnName}\``;
+    return `${hi}\n\nHere's the problem — **${p.title}**:\n\n${p.statement}\n\n**Example:** ${p.examples}\n\nTake a moment to read it. Feel free to ask clarifying questions, then walk me through your approach before you code. Implement ${sig} in the editor on the right — **Run tests** checks it against hidden test cases.`;
   }
   const d = DESIGNS.find((x) => x.key === s.problemKey) ?? DESIGNS[0];
   return `${hi}\n\nToday I'd like you to **design ${d.title.toLowerCase()}**. ${d.prompt}\n\nYou drive — think out loud, and use the scratchpad on the right for requirements, numbers and your component list. Where would you like to start?`;
@@ -234,11 +346,12 @@ export function buildRequest(
   turns: Turn[],
   scratchpad: string,
   elapsedMin: number,
-  budgetChars = 18_000
+  budgetChars = 18_000,
+  testNote = ""
 ): ChatMessage[] {
   const sys = systemPrompt(s);
   const pad = scratchpad.trim().slice(0, 5000);
-  const note = `\n\n[context] ${Math.floor(elapsedMin)} of ${s.minutes} minutes elapsed. Candidate's scratchpad:\n${pad ? "```\n" + pad + "\n```" : "(empty)"}`;
+  const note = `\n\n[context] ${Math.floor(elapsedMin)} of ${s.minutes} minutes elapsed.${testNote ? " " + testNote : ""} Candidate's scratchpad:\n${pad ? "```\n" + pad + "\n```" : "(empty)"}`;
 
   // The conversation must start with a user turn for the API; the opener is the interviewer's.
   const all: ChatMessage[] = [{ role: "user", content: "(The candidate joins the call.)" }, ...turns.map((t) => ({ role: t.role, content: t.content }))];
@@ -263,7 +376,7 @@ export function buildRequest(
 }
 
 /** One self-contained request asking for the scorecard as JSON. */
-export function reportRequest(s: Setup, turns: Turn[], scratchpad: string, budgetChars = 16_000): ChatMessage[] {
+export function reportRequest(s: Setup, turns: Turn[], scratchpad: string, budgetChars = 16_000, testNote = ""): ChatMessage[] {
   const dims = RUBRIC[s.mode];
   const problem = problemTitle(s.mode, s.problemKey);
   const lines = turns.map((t) => `${t.role === "assistant" ? "INTERVIEWER" : "CANDIDATE"}: ${t.content}`);
@@ -288,7 +401,7 @@ Candidate's final scratchpad:
 \`\`\`
 ${scratchpad.trim().slice(0, 5000) || "(empty)"}
 \`\`\`
-
+${testNote ? `\n${testNote} Weigh this heavily for the Coding and Testing scores.\n` : ""}
 Transcript:
 ${transcript}
 
@@ -358,4 +471,24 @@ export function average(sc: Scorecard): number {
 function verdictFor(scores: { score: number }[]): string {
   const avg = scores.reduce((n, s) => n + s.score, 0) / Math.max(1, scores.length);
   return avg >= 3.6 ? "Strong hire" : avg >= 3 ? "Hire" : avg >= 2.5 ? "Lean hire" : avg >= 1.8 ? "No hire" : "Strong no hire";
+}
+
+export interface RunSummary {
+  passed: number;
+  total: number;
+  /** Error shown when the code didn't load at all (syntax error, missing function, timeout). */
+  fatal?: string;
+  /** Up to three failing cases, already formatted. */
+  failing: string[];
+  /** The code these results belong to, to detect edits since the run. */
+  code: string;
+}
+
+/** One line the interviewer (and the report) can read. */
+export function testNote(run: RunSummary | undefined, currentCode: string): string {
+  if (!run) return "Tests: not run yet.";
+  const stale = run.code.trim() !== currentCode.trim() ? " (code has changed since this run)" : "";
+  if (run.fatal) return `Latest test run${stale}: code did not run — ${run.fatal}.`;
+  const fails = run.failing.length ? ` Failing: ${run.failing.join("; ")}.` : "";
+  return `Latest test run${stale}: ${run.passed}/${run.total} tests passed.${fails}`;
 }

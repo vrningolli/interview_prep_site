@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "extract": "node scripts/extract-content.mjs",
-    "build:ai-lab": "node scripts/build-ai-lab.mjs"
+    "build:ai-lab": "node scripts/build-ai-lab.mjs",
+    "stats": "node scripts/stats.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.7.0",

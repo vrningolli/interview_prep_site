@@ -6,6 +6,9 @@ import remarkGfm from "remark-gfm";
 import {
   BookOpen,
   Bot,
+  CheckCircle2,
+  FlaskConical,
+  XCircle,
   Clock,
   Code2,
   KeyRound,
@@ -24,6 +27,7 @@ import {
   LEVELS,
   Level,
   Mode,
+  RunSummary,
   Setup,
   Turn,
   average,
@@ -33,7 +37,10 @@ import {
   problemTitle,
   randomProblem,
   reportRequest,
+  testNote,
 } from "../interview/prompts";
+import { runInterviewTests } from "../interview/tests";
+import { track } from "../analytics";
 import { Session, loadKey, newId, saveKey, useProviderSettings, useSessions } from "../interview/store";
 import "../sd-mock.css";
 
@@ -75,10 +82,11 @@ export default function MockInterview({
       setup,
       startedAt: Date.now(),
       turns: [{ role: "assistant", content: openingMessage(setup), at: 0 }],
-      scratchpad: "",
+      scratchpad: setup.mode === "coding" ? CODING_PROBLEMS.find((p) => p.key === setup.problemKey)?.starter ?? "" : "",
       provider: settings.kind,
     };
     sessions.setActive(s);
+    track("interview_started", `${setup.mode}:${setup.problemKey}:${settings.kind}`);
     setViewId(null);
   };
 
@@ -91,8 +99,12 @@ export default function MockInterview({
         onFinish={(s) => {
           sessions.finish(s);
           setViewId(s.id);
+          track("interview_finished", `${s.setup.mode}:${s.setup.problemKey}:${s.scorecard?.verdict ?? "unscored"}`, s.scorecard ? average(s.scorecard) : 0);
         }}
-        onDiscard={() => sessions.setActive(null)}
+        onDiscard={() => {
+          track("interview_discarded", `${sessions.active?.setup.mode}:${sessions.active?.setup.problemKey}`);
+          sessions.setActive(null);
+        }}
       />
     );
   }
@@ -182,6 +194,7 @@ function SetupView({
     try {
       const name = await checkClaudeKey(apiKey, settings.model);
       setKeyState({ kind: "ok", text: `Key works — ${name} is ready.` });
+      track("claude_key_checked", "ok");
     } catch (e) {
       const err = e as LlmError;
       setKeyState({ kind: "err", text: `${err.message} ${err.hint ?? ""}` });
@@ -407,6 +420,9 @@ function Room({
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState<string | null>(null);
   const [busy, setBusy] = useState<"" | "turn" | "report">("");
+  const [testing, setTesting] = useState(false);
+  const isCoding = setup.mode === "coding";
+  const note = (run: RunSummary | undefined, code: string) => (isCoding ? testNote(run, code) : "");
   const [error, setError] = useState<LlmError | null>(null);
   const [now, setNow] = useState(Date.now());
   const abortRef = useRef<AbortController | null>(null);
@@ -437,7 +453,7 @@ function Room({
     setStreaming("");
     let acc = "";
     try {
-      const msgs = buildRequest(setup, turns, session.scratchpad, elapsed / 60_000, budget.turn);
+      const msgs = buildRequest(setup, turns, session.scratchpad, elapsed / 60_000, budget.turn, note(session.lastRun, session.scratchpad));
       await chatStream(cfg, msgs, (d) => {
         acc += d;
         setStreaming(acc);
@@ -463,6 +479,18 @@ function Room({
 
   const lastIsUser = session.turns[session.turns.length - 1]?.role === "user";
 
+  const runTestsNow = async (): Promise<RunSummary> => {
+    setTesting(true);
+    try {
+      const run = await runInterviewTests(setup.problemKey, session.scratchpad);
+      update((s) => ({ ...s, lastRun: run }));
+      track("tests_run", setup.problemKey, run.total ? run.passed / run.total : 0);
+      return run;
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const end = async () => {
     if (candidateTurns === 0) {
       if (confirm("You haven't answered yet — discard this interview?")) onDiscard();
@@ -476,12 +504,15 @@ function Room({
     setStreaming("");
     let acc = "";
     try {
-      await chatStream(cfg, reportRequest(setup, session.turns, session.scratchpad, budget.report), (d) => {
+      // Grade the final code, not whatever was last run.
+      const finalRun = isCoding && session.scratchpad.trim() ? await runInterviewTests(setup.problemKey, session.scratchpad) : session.lastRun;
+      const finalNote = isCoding ? `Final hidden tests: ${testNote(finalRun, session.scratchpad).replace(/^Latest test run: /, "")}` : "";
+      await chatStream(cfg, reportRequest(setup, session.turns, session.scratchpad, budget.report, finalNote), (d) => {
         acc += d;
         setStreaming(acc);
       }, { signal: ctrl.signal, purpose: "report" });
       const sc = parseScorecard(acc, setup.mode);
-      onFinish({ ...session, endedAt: Date.now(), scorecard: sc ?? undefined, rawReport: sc ? undefined : acc });
+      onFinish({ ...session, lastRun: finalRun, endedAt: Date.now(), scorecard: sc ?? undefined, rawReport: sc ? undefined : acc });
     } catch (e) {
       setError(e instanceof LlmError ? e : new LlmError(String(e)));
     } finally {
@@ -560,8 +591,15 @@ function Room({
 
         <section className="room-pad">
           <div className="room-pad-head">
-            <b>{setup.mode === "coding" ? "Your code" : "Your design notes"}</b>
-            <span>The interviewer sees this with every message.</span>
+            <div>
+              <b>{isCoding ? "Your code (JavaScript)" : "Your design notes"}</b>
+              <span>The interviewer sees this with every message.</span>
+            </div>
+            {isCoding && (
+              <button className="btn" onClick={runTestsNow} disabled={testing || !session.scratchpad.trim()}>
+                <FlaskConical size={15} /> {testing ? "Running…" : "Run tests"}
+              </button>
+            )}
           </div>
           <textarea
             className={setup.mode === "coding" ? "mono" : ""}
@@ -587,6 +625,7 @@ function Room({
               }
             }}
           />
+          {isCoding && session.lastRun && <TestPanel run={session.lastRun} stale={session.lastRun.code.trim() !== session.scratchpad.trim()} />}
         </section>
       </div>
     </div>
@@ -650,6 +689,7 @@ function Report({
         )}
       </header>
 
+      {session.lastRun && setup.mode === "coding" && <TestPanel run={session.lastRun} stale={false} final />}
       {sc ? (
         <>
           {sc.summary && <p className="report-summary">{sc.summary}</p>}
@@ -727,6 +767,28 @@ function ListBox({ title, items, cls }: { title: string; items: string[]; cls: s
           <li key={t}>{t}</li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function TestPanel({ run, stale, final }: { run: RunSummary; stale: boolean; final?: boolean }) {
+  const allPass = !run.fatal && run.passed === run.total;
+  return (
+    <div className={`test-panel ${allPass ? "pass" : "fail"}`} aria-live="polite">
+      <div className="test-panel-head">
+        {allPass ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
+        <b>
+          {run.fatal ? "Code didn't run" : `${run.passed}/${run.total} hidden tests passed`}
+          {final && " with the final code"}
+        </b>
+        {stale && <span className="test-stale">code changed since this run</span>}
+      </div>
+      {run.fatal && <p className="test-line">{run.fatal}</p>}
+      {run.failing.map((f) => (
+        <p key={f} className="test-line">
+          {f}
+        </p>
+      ))}
     </div>
   );
 }
