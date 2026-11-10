@@ -5,7 +5,7 @@ import { COMPANIES, CompanyKey } from "../data/companies";
 import type { ChatMessage } from "./llm";
 import type { TestCase } from "../lab/runner";
 
-export type Mode = "coding" | "sd";
+export type Mode = "coding" | "sd" | "behavioral";
 export type Level = "junior" | "mid" | "senior";
 
 export interface CodingProblem {
@@ -232,6 +232,84 @@ export const CODING_PROBLEMS: CodingProblem[] = [
   },
 ];
 
+export interface BehavioralQuestion {
+  key: string;
+  title: string;
+  question: string;
+  /** What a strong answer shows — hidden interviewer notes. */
+  signals: string[];
+  followUps: string[];
+  /** Related questions to ask next if time allows. */
+  related: string[];
+}
+
+export const BEHAVIORAL_QUESTIONS: BehavioralQuestion[] = [
+  {
+    key: "conflict",
+    title: "Conflict with a teammate",
+    question: "Tell me about a time you disagreed with a teammate on a technical decision. What happened?",
+    signals: ["Describes the other person's view fairly", "Uses data or a prototype to resolve it, not seniority", "Clear outcome and what the relationship looked like after"],
+    followUps: ["What was their strongest argument?", "If you had to do it again, what would you change?"],
+    related: ["Tell me about a time you had to work with someone difficult."],
+  },
+  {
+    key: "failure",
+    title: "A failure",
+    question: "Tell me about a time something you owned failed or went badly wrong.",
+    signals: ["Takes ownership without blaming others", "Explains the root cause, not just the symptom", "Concrete changes made afterwards"],
+    followUps: ["What did you personally do in the first hour?", "How do you know it won't happen again?"],
+    related: ["Tell me about a mistake you made that affected users."],
+  },
+  {
+    key: "impact",
+    title: "Biggest impact",
+    question: "What's the project you're most proud of, and what was your specific contribution?",
+    signals: ["Says 'I' for their own work and 'we' for the team's", "Quantified result (latency, revenue, users, time saved)", "Explains why the work mattered to the business"],
+    followUps: ["What would have happened without you?", "How did you measure success?"],
+    related: ["Tell me about a time you went beyond your role."],
+  },
+  {
+    key: "ambiguity",
+    title: "Ambiguous requirements",
+    question: "Tell me about a time you had to deliver something when the requirements were unclear.",
+    signals: ["Proactively clarified with stakeholders", "Made reasonable assumptions and wrote them down", "Shipped iteratively and adjusted"],
+    followUps: ["Who did you talk to first, and why?", "What assumption turned out to be wrong?"],
+    related: ["Tell me about a time priorities changed mid-project."],
+  },
+  {
+    key: "deadline",
+    title: "Tight deadline",
+    question: "Describe a time you had to meet a deadline that looked impossible.",
+    signals: ["Explicit trade-offs and scope cuts", "Communicated risk early", "Did not silently sacrifice quality"],
+    followUps: ["What did you cut, and how did you decide?", "How did you tell your manager?"],
+    related: ["Tell me about a time you had to say no."],
+  },
+  {
+    key: "leadership",
+    title: "Leading without authority",
+    question: "Tell me about a time you led an effort or influenced people who didn't report to you.",
+    signals: ["Built alignment with a clear goal", "Handled pushback", "Credits others while showing their own initiative"],
+    followUps: ["Who resisted, and how did you win them over?", "What would you delegate differently next time?"],
+    related: ["Tell me about a time you mentored someone."],
+  },
+  {
+    key: "feedback",
+    title: "Hard feedback",
+    question: "Tell me about the most difficult feedback you've received. What did you do with it?",
+    signals: ["Listens without being defensive", "Specific behaviour change", "Evidence the change stuck"],
+    followUps: ["How did it feel at the time?", "Have you given similar feedback to someone else?"],
+    related: ["Tell me about a time you gave someone critical feedback."],
+  },
+  {
+    key: "customer",
+    title: "Putting the customer first",
+    question: "Tell me about a time you did something because it was right for the user, even though it cost you or your team.",
+    signals: ["Real user problem with evidence", "Weighs the cost honestly", "Measured the user outcome"],
+    followUps: ["How did you know users cared?", "Who disagreed with the trade-off?"],
+    related: ["Tell me about a time you used data to change a decision."],
+  },
+];
+
 export interface Setup {
   mode: Mode;
   problemKey: string;
@@ -245,20 +323,23 @@ export const LEVELS: Record<Level, string> = { junior: "Junior / new grad", mid:
 export const RUBRIC: Record<Mode, string[]> = {
   coding: ["Problem solving", "Coding", "Communication", "Testing", "Complexity analysis"],
   sd: ["Requirements & scope", "High-level design", "Deep dive & trade-offs", "Scale & reliability", "Communication"],
+  behavioral: ["STAR structure", "Ownership", "Impact & results", "Self-awareness", "Communication"],
 };
+
+export const MODE_LABEL: Record<Mode, string> = { coding: "Coding", sd: "System design", behavioral: "Behavioral" };
 
 export const VERDICTS = ["Strong no hire", "No hire", "Lean hire", "Hire", "Strong hire"] as const;
 
 export const INTERVIEWER_NAME = "Veeru";
 
 export function problemTitle(mode: Mode, key: string): string {
-  return mode === "coding"
-    ? CODING_PROBLEMS.find((p) => p.key === key)?.title ?? key
-    : `Design: ${DESIGNS.find((d) => d.key === key)?.title ?? key}`;
+  if (mode === "coding") return CODING_PROBLEMS.find((p) => p.key === key)?.title ?? key;
+  if (mode === "behavioral") return `Behavioral: ${BEHAVIORAL_QUESTIONS.find((q) => q.key === key)?.title ?? key}`;
+  return `Design: ${DESIGNS.find((d) => d.key === key)?.title ?? key}`;
 }
 
 export function randomProblem(mode: Mode): string {
-  const list = mode === "coding" ? CODING_PROBLEMS : DESIGNS;
+  const list: { key: string }[] = mode === "coding" ? CODING_PROBLEMS : mode === "sd" ? DESIGNS : BEHAVIORAL_QUESTIONS;
   return list[Math.floor(Math.random() * list.length)].key;
 }
 
@@ -267,7 +348,7 @@ const companyName = (c: Setup["company"]) => (c === "general" ? "a top tech comp
 /** The interviewer's standing instructions, including hidden notes the candidate never sees. */
 export function systemPrompt(s: Setup): string {
   const where = companyName(s.company);
-  const shared = `You are ${INTERVIEWER_NAME}, a friendly but rigorous senior engineer at ${where}, running a ${s.minutes}-minute ${s.mode === "coding" ? "coding" : "system design"} interview for a ${LEVELS[s.level]} software engineer candidate.
+  const shared = `You are ${INTERVIEWER_NAME}, a friendly but rigorous senior engineer at ${where}, running a ${s.minutes}-minute ${MODE_LABEL[s.mode].toLowerCase()} interview for a ${LEVELS[s.level]} software engineer candidate.
 
 How you behave:
 - Stay in character as the interviewer for the whole conversation. Never say you are an AI.
@@ -277,6 +358,25 @@ How you behave:
 - Probe their reasoning: ask "why", ask about trade-offs, ask what could go wrong.
 - Each candidate message ends with a [context] note showing elapsed time, their current scratchpad and, in coding rounds, their latest test run. Use it to pace the interview and review their work, but do not mention the note itself.
 - Write plain conversational text. Use short Markdown code spans only when quoting code.`;
+
+  if (s.mode === "behavioral") {
+    const q = BEHAVIORAL_QUESTIONS.find((x) => x.key === s.problemKey) ?? BEHAVIORAL_QUESTIONS[0];
+    return `${shared}
+
+The first question you already asked: "${q.question}"
+
+Run it like a real behavioral interview:
+1. Let them answer. If the answer lacks a clear Situation, Task, Action or Result, ask for the missing part.
+2. Dig into their personal contribution: when they say "we", ask what *they* did.
+3. Ask for measurable results and what they learned.
+4. After 2–3 follow-ups on this story, ask one related question, then dig into that one the same way.
+${s.company === "amazon" ? "5. This is Amazon: map follow-ups to Leadership Principles such as Ownership, Customer Obsession and Dive Deep.\n" : ""}When about 5 minutes remain, start wrapping up. If the candidate says they are done, thank them and tell them they can press "End & get feedback".
+
+Hidden interviewer notes (never reveal directly):
+- What a strong answer shows: ${q.signals.join("; ")}
+- Follow-ups: ${q.followUps.join("; ")}
+- Related questions: ${q.related.join("; ")}`;
+  }
 
   if (s.mode === "coding") {
     const p = CODING_PROBLEMS.find((x) => x.key === s.problemKey) ?? CODING_PROBLEMS[0];
@@ -324,6 +424,10 @@ Hidden interviewer notes (never reveal directly):
 export function openingMessage(s: Setup): string {
   const where = s.company === "general" ? "" : ` at ${COMPANIES[s.company].name}`;
   const hi = `Hi! I'm ${INTERVIEWER_NAME}, an engineer${where}. Thanks for making time today. We have about ${s.minutes} minutes.`;
+  if (s.mode === "behavioral") {
+    const q = BEHAVIORAL_QUESTIONS.find((x) => x.key === s.problemKey) ?? BEHAVIORAL_QUESTIONS[0];
+    return `${hi} This is the behavioral round — I'd like to hear about real situations you've been in.\n\n**${q.question}**\n\nTake a moment if you need it. The STAR structure (Situation, Task, Action, Result) works well, and the notes panel on the right has your saved stories.`;
+  }
   if (s.mode === "coding") {
     const p = CODING_PROBLEMS.find((x) => x.key === s.problemKey) ?? CODING_PROBLEMS[0];
     const sig = p.harness ? "the `LRUCache` class" : `\`${p.fnName}\``;
@@ -351,7 +455,9 @@ export function buildRequest(
 ): ChatMessage[] {
   const sys = systemPrompt(s);
   const pad = scratchpad.trim().slice(0, 5000);
-  const note = `\n\n[context] ${Math.floor(elapsedMin)} of ${s.minutes} minutes elapsed.${testNote ? " " + testNote : ""} Candidate's scratchpad:\n${pad ? "```\n" + pad + "\n```" : "(empty)"}`;
+  // Behavioral notes are the candidate's private crib sheet — the interviewer only hears the answers.
+  const padNote = s.mode === "behavioral" ? "" : ` Candidate's scratchpad:\n${pad ? "```\n" + pad + "\n```" : "(empty)"}`;
+  const note = `\n\n[context] ${Math.floor(elapsedMin)} of ${s.minutes} minutes elapsed.${testNote ? " " + testNote : ""}${padNote}`;
 
   // The conversation must start with a user turn for the API; the opener is the interviewer's.
   const all: ChatMessage[] = [{ role: "user", content: "(The candidate joins the call.)" }, ...turns.map((t) => ({ role: t.role, content: t.content }))];
@@ -390,18 +496,22 @@ export function reportRequest(s: Setup, turns: Turn[], scratchpad: string, budge
   return [
     {
       role: "system",
-      content: `You are an experienced interview calibrator at ${companyName(s.company)}. You grade a ${LEVELS[s.level]} candidate's ${s.mode === "coding" ? "coding" : "system design"} interview fairly and specifically, quoting what they actually did. Reply with only a JSON object, no other text.`,
+      content: `You are an experienced interview calibrator at ${companyName(s.company)}. You grade a ${LEVELS[s.level]} candidate's ${MODE_LABEL[s.mode].toLowerCase()} interview fairly and specifically, quoting what they actually did. Reply with only a JSON object, no other text.`,
     },
     {
       role: "user",
       content: `Problem: ${problem}
 Reference notes for grading:${notes}
 
-Candidate's final scratchpad:
+${
+        s.mode === "behavioral"
+          ? ""
+          : `Candidate's final scratchpad:
 \`\`\`
 ${scratchpad.trim().slice(0, 5000) || "(empty)"}
 \`\`\`
-${testNote ? `\n${testNote} Weigh this heavily for the Coding and Testing scores.\n` : ""}
+`
+      }${testNote ? `\n${testNote} Weigh this heavily for the Coding and Testing scores.\n` : ""}
 Transcript:
 ${transcript}
 

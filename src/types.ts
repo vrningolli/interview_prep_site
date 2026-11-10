@@ -1,6 +1,6 @@
 export type Category = "ds" | "algo";
 
-export type Tab = Category | "sd" | "trainer" | "review" | "mock" | "kit" | "cheatsheet" | "prep";
+export type Tab = "today" | Category | "sd" | "trainer" | "review" | "mock" | "kit" | "cheatsheet" | "prep";
 
 export interface Lesson {
   level?: "beginner" | "intermediate" | "advanced" | string;

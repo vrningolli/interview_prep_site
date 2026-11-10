@@ -11,6 +11,12 @@ import {
   XCircle,
   Clock,
   Code2,
+  MessagesSquare,
+  Mic,
+  MicOff,
+  Share2,
+  Volume2,
+  VolumeX,
   KeyRound,
   Network,
   RotateCcw,
@@ -23,7 +29,9 @@ import { DESIGNS } from "../data/systemDesign";
 import { COMPANIES, COMPANY_ORDER } from "../data/companies";
 import { CLAUDE_MODELS, LlmError, ProviderConfig, chatStream, checkClaudeKey } from "../interview/llm";
 import {
+  BEHAVIORAL_QUESTIONS,
   CODING_PROBLEMS,
+  MODE_LABEL,
   LEVELS,
   Level,
   Mode,
@@ -42,6 +50,10 @@ import {
 import { runInterviewTests } from "../interview/tests";
 import { track } from "../analytics";
 import { Session, loadKey, newId, saveKey, useProviderSettings, useSessions } from "../interview/store";
+import { canDictate, canSpeak, speak, stopSpeaking, useDictation } from "../interview/voice";
+import { shareScorecard } from "../interview/share";
+import { PREP_STORAGE_KEY } from "../prep/store";
+import { useProfile } from "../profile";
 import "../sd-mock.css";
 
 export interface MockPreset {
@@ -51,6 +63,23 @@ export interface MockPreset {
 
 /** Context budgets: the free 8B model has a small window; Claude's is huge. */
 const BUDGET = { free: { turn: 11_000, report: 9_000 }, claude: { turn: 80_000, report: 80_000 } };
+
+/** What the editor/notes panel starts with for each round. */
+function startingPad(setup: Setup): string {
+  if (setup.mode === "coding") return CODING_PROBLEMS.find((p) => p.key === setup.problemKey)?.starter ?? "";
+  if (setup.mode === "sd") return "";
+  // Behavioral: the candidate's own story bank from Company Prep, as private notes.
+  let stories: { title: string; situation?: string; action?: string; result?: string }[] = [];
+  try {
+    stories = JSON.parse(localStorage.getItem(PREP_STORAGE_KEY) || "{}").stories ?? [];
+  } catch {
+    /* no stories */
+  }
+  if (!stories.length) {
+    return "Situation:\n\nTask:\n\nAction (what I did):\n\nResult (numbers!):\n\nWhat I learned:\n";
+  }
+  return "My stories (from Company Prep → Story bank):\n\n" + stories.map((st) => `• ${st.title}\n  S: ${st.situation ?? ""}\n  A: ${st.action ?? ""}\n  R: ${st.result ?? ""}`).join("\n\n");
+}
 
 const fmtClock = (ms: number) => {
   const s = Math.max(0, Math.floor(ms / 1000));
@@ -82,7 +111,7 @@ export default function MockInterview({
       setup,
       startedAt: Date.now(),
       turns: [{ role: "assistant", content: openingMessage(setup), at: 0 }],
-      scratchpad: setup.mode === "coding" ? CODING_PROBLEMS.find((p) => p.key === setup.problemKey)?.starter ?? "" : "",
+      scratchpad: startingPad(setup),
       provider: settings.kind,
     };
     sessions.setActive(s);
@@ -169,7 +198,8 @@ function SetupView({
   const [mode, setMode] = useState<Mode>(preset?.mode ?? "coding");
   const [problemKey, setProblemKey] = useState<string>(preset?.problemKey ?? "random");
   const [company, setCompany] = useState<Setup["company"]>("general");
-  const [level, setLevel] = useState<Level>("mid");
+  const [profile] = useProfile();
+  const [level, setLevel] = useState<Level>(profile.level);
   const [minutes, setMinutes] = useState(45);
   const [keyState, setKeyState] = useState<{ kind: "idle" | "checking" | "ok" | "err"; text?: string }>({ kind: "idle" });
 
@@ -182,7 +212,12 @@ function SetupView({
     }
   }, [preset, onPresetUsed]);
 
-  const problems = mode === "coding" ? CODING_PROBLEMS.map((p) => ({ key: p.key, label: `${p.title} · ${p.difficulty}` })) : DESIGNS.map((d) => ({ key: d.key, label: `${d.title} · ${d.level}` }));
+  const problems =
+    mode === "coding"
+      ? CODING_PROBLEMS.map((p) => ({ key: p.key, label: `${p.title} · ${p.difficulty}` }))
+      : mode === "sd"
+        ? DESIGNS.map((d) => ({ key: d.key, label: `${d.title} · ${d.level}` }))
+        : BEHAVIORAL_QUESTIONS.map((q) => ({ key: q.key, label: q.title }));
 
   const switchMode = (m: Mode) => {
     setMode(m);
@@ -212,8 +247,8 @@ function SetupView({
           <span className="kicker-sm">AI mock interview</span>
           <h2>Practise with an interviewer who pushes back</h2>
           <p className="hero-sub">
-            A live coding or system-design round with an AI interviewer: clarifying questions, hints when you're stuck,
-            follow-ups, a timer — and a rubric scorecard at the end.
+            A live coding, system design or behavioral round with Veeru, an AI interviewer: clarifying questions, hints
+            when you're stuck, hidden tests for your code, optional voice — and a rubric scorecard at the end.
           </p>
         </div>
         {scored.length > 0 && (
@@ -235,7 +270,7 @@ function SetupView({
 
       <section className="mock-card">
         <h3>1 · Choose the round</h3>
-        <div className="mock-modes">
+        <div className="mock-modes three">
           <button className={`mock-mode ${mode === "coding" ? "on" : ""}`} onClick={() => switchMode("coding")}>
             <Code2 size={22} />
             <b>Coding</b>
@@ -246,10 +281,15 @@ function SetupView({
             <b>System design</b>
             <span>Design a real system end to end</span>
           </button>
+          <button className={`mock-mode ${mode === "behavioral" ? "on" : ""}`} onClick={() => switchMode("behavioral")}>
+            <MessagesSquare size={22} />
+            <b>Behavioral</b>
+            <span>Real stories, STAR answers, follow-ups</span>
+          </button>
         </div>
         <div className="mock-fields">
           <label className="mfield">
-            <span>Problem</span>
+            <span>{mode === "behavioral" ? "Opening question" : "Problem"}</span>
             <select className="field" value={problemKey} onChange={(e) => setProblemKey(e.target.value)}>
               <option value="random">Surprise me</option>
               {problems.map((p) => (
@@ -380,7 +420,7 @@ function SetupView({
                 <button onClick={() => onOpen(h.id)}>
                   <span className="mock-history-title">{problemTitle(h.setup.mode, h.setup.problemKey)}</span>
                   <span className="mock-history-meta">
-                    {new Date(h.startedAt).toLocaleDateString()} · {h.setup.mode === "coding" ? "Coding" : "System design"}
+                    {new Date(h.startedAt).toLocaleDateString()} · {MODE_LABEL[h.setup.mode]}
                   </span>
                   {h.scorecard ? (
                     <span className={`verdict verdict-${verdictClass(h.scorecard.verdict)}`}>
@@ -421,6 +461,27 @@ function Room({
   const [streaming, setStreaming] = useState<string | null>(null);
   const [busy, setBusy] = useState<"" | "turn" | "report">("");
   const [testing, setTesting] = useState(false);
+  const [voiceOn, setVoiceOn] = useState(() => {
+    try {
+      return localStorage.getItem("prep-mock-voice") === "1";
+    } catch {
+      return false;
+    }
+  });
+  const voiceRef = useRef(voiceOn);
+  voiceRef.current = voiceOn;
+  const dictation = useDictation((t) => setInput((v) => (v ? v.replace(/\s*$/, " ") : "") + t));
+  const toggleVoice = () => {
+    const next = !voiceOn;
+    setVoiceOn(next);
+    if (!next) stopSpeaking();
+    try {
+      localStorage.setItem("prep-mock-voice", next ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  };
+  useEffect(() => () => stopSpeaking(), []);
   const isCoding = setup.mode === "coding";
   const note = (run: RunSummary | undefined, code: string) => (isCoding ? testNote(run, code) : "");
   const [error, setError] = useState<LlmError | null>(null);
@@ -463,6 +524,7 @@ function Room({
     } finally {
       const text = acc.trim();
       if (text) update((s) => ({ ...s, turns: [...turns, { role: "assistant", content: text, at: Date.now() - s.startedAt }] }));
+      if (text && voiceRef.current) speak(text);
       setStreaming(null);
       setBusy("");
     }
@@ -471,6 +533,7 @@ function Room({
   const send = () => {
     const text = input.trim();
     if (!text || busy) return;
+    if (dictation.listening) dictation.stop();
     const turns: Turn[] = [...session.turns, { role: "user", content: text, at: Date.now() - session.startedAt }];
     update((s) => ({ ...s, turns }));
     setInput("");
@@ -525,13 +588,18 @@ function Room({
     <div className="room">
       <header className="room-head">
         <div>
-          <span className="kicker-sm">{setup.mode === "coding" ? "Coding interview" : "System design interview"}</span>
+          <span className="kicker-sm">{MODE_LABEL[setup.mode]} interview</span>
           <h2>{problemTitle(setup.mode, setup.problemKey)}</h2>
         </div>
         <div className={`room-clock ${left < 0 ? "over" : left < 5 * 60_000 ? "warn" : ""}`} title="Time remaining">
           <Clock size={16} /> {left >= 0 ? fmtClock(left) : `+${fmtClock(-left)}`}
         </div>
         <div className="room-actions">
+          {canSpeak() && (
+            <button className={`btn ${voiceOn ? "on" : ""}`} onClick={toggleVoice} title="Read the interviewer's replies aloud" aria-pressed={voiceOn}>
+              {voiceOn ? <Volume2 size={15} /> : <VolumeX size={15} />} Voice {voiceOn ? "on" : "off"}
+            </button>
+          )}
           <button className="btn" onClick={() => confirm("Discard this interview without a score?") && onDiscard()} disabled={!!busy}>
             <Trash2 size={15} /> Discard
           </button>
@@ -564,7 +632,26 @@ function Room({
               </div>
             )}
           </div>
+          {(dictation.listening || dictation.error) && (
+            <div className={`dictation ${dictation.error ? "err" : ""}`}>
+              {dictation.error || (
+                <>
+                  <span className="rec-dot" /> Listening… {dictation.interim && <i>{dictation.interim}</i>}
+                </>
+              )}
+            </div>
+          )}
           <div className="room-input">
+            {canDictate() && (
+              <button
+                className={`btn mic ${dictation.listening ? "on" : ""}`}
+                onClick={dictation.listening ? dictation.stop : dictation.start}
+                aria-label={dictation.listening ? "Stop dictation" : "Speak your answer"}
+                title={dictation.listening ? "Stop dictation" : "Speak your answer"}
+              >
+                {dictation.listening ? <MicOff size={16} /> : <Mic size={16} />}
+              </button>
+            )}
             <textarea
               value={input}
               placeholder={busy ? "Interviewer is replying…" : "Talk to your interviewer — Enter to send, Shift+Enter for a new line"}
@@ -592,8 +679,8 @@ function Room({
         <section className="room-pad">
           <div className="room-pad-head">
             <div>
-              <b>{isCoding ? "Your code (JavaScript)" : "Your design notes"}</b>
-              <span>The interviewer sees this with every message.</span>
+              <b>{isCoding ? "Your code (JavaScript)" : setup.mode === "sd" ? "Your design notes" : "Your notes"}</b>
+              <span>{setup.mode === "behavioral" ? "Private — the interviewer only hears your answers." : "The interviewer sees this with every message."}</span>
             </div>
             {isCoding && (
               <button className="btn" onClick={runTestsNow} disabled={testing || !session.scratchpad.trim()}>
@@ -608,7 +695,9 @@ function Room({
             placeholder={
               setup.mode === "coding"
                 ? "function solve(input) {\n  // write your solution here\n}"
-                : "Requirements:\n- \n\nEstimates:\n- \n\nAPI:\n- \n\nComponents:\n- client → LB → service → DB"
+                : setup.mode === "sd"
+                  ? "Requirements:\n- \n\nEstimates:\n- \n\nAPI:\n- \n\nComponents:\n- client → LB → service → DB"
+                  : "Jot down the story you'll tell."
             }
             onChange={(e) => {
               const v = e.target.value;
@@ -664,6 +753,17 @@ function Report({
   const avg = useMemo(() => (sc ? average(sc) : 0), [sc]);
   const minutes = session.endedAt ? Math.round((session.endedAt - session.startedAt) / 60_000) : null;
   const topic = setup.mode === "coding" ? CODING_PROBLEMS.find((p) => p.key === setup.problemKey)?.topic : undefined;
+  const [shareMsg, setShareMsg] = useState("");
+  const share = async () => {
+    if (!sc) return;
+    try {
+      const r = await shareScorecard(setup, sc);
+      if (r !== "cancelled") track("scorecard_shared", `${setup.mode}:${r}`);
+      setShareMsg(r === "downloaded" ? "Image saved — attach it to your LinkedIn post." : r === "shared" ? "Shared!" : "");
+    } catch (e) {
+      setShareMsg(e instanceof Error ? e.message : String(e));
+    }
+  };
 
   return (
     <div className="report">
@@ -726,6 +826,11 @@ function Report({
         <button className="btn-primary" onClick={onRetry}>
           <RotateCcw size={15} /> Try this problem again
         </button>
+        {sc && (
+          <button className="btn" onClick={share}>
+            <Share2 size={15} /> Share scorecard
+          </button>
+        )}
         {topic && (
           <button className="btn" onClick={() => onStudyTopic(topic)}>
             <BookOpen size={15} /> Study the topic
@@ -740,6 +845,8 @@ function Report({
           <Trash2 size={15} /> Delete
         </button>
       </div>
+
+      {shareMsg && <p className="ok">{shareMsg}</p>}
 
       <details className="report-transcript">
         <summary>Transcript ({session.turns.length} messages)</summary>

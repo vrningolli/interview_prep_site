@@ -13,10 +13,12 @@ import CompanyPrep from "./components/CompanyPrep";
 import SystemDesign from "./components/SystemDesign";
 import MockInterview, { MockPreset } from "./components/MockInterview";
 import { track } from "./analytics";
+import Today from "./components/Today";
 
 const content = rawContent as unknown as Content;
 
 const TAB_NAMES: Record<Tab, string> = {
+  today: "Today",
   ds: "Data Structures",
   algo: "Algorithms",
   sd: "System Design",
@@ -32,7 +34,7 @@ const TAB_NAMES: Record<Tab, string> = {
 /** Deep links like #prep/mock or #prep/sd open a tab directly (used by the landing page). */
 const tabFromHash = (): Tab => {
   const t = location.hash.split("/")[1] as Tab | undefined;
-  return t && t in TAB_NAMES ? t : "ds";
+  return t && t in TAB_NAMES ? t : "today";
 };
 
 export default function PrepCoach() {
@@ -193,6 +195,18 @@ export default function PrepCoach() {
           {tab === "review" && <ReviewDeck content={content} />}
           {tab === "kit" && <InterviewKit />}
           {tab === "cheatsheet" && <CheatSheet topics={content.topics} />}
+          {tab === "today" && (
+            <Today
+              onTab={selectTab}
+              onOpenTopic={openTopic}
+              onOpenDesign={openDesign}
+              onMock={(mode) => {
+                setMockPreset({ mode, problemKey: "random" });
+                setTab("mock");
+                mainRef.current?.scrollTo({ top: 0 });
+              }}
+            />
+          )}
           {tab === "prep" && <CompanyPrep onOpenTopic={openTopic} />}
           {tab === "sd" && <SystemDesign key={sdOpen ?? "sd"} initialDesign={sdOpen} onMock={mockDesign} />}
           {tab === "mock" && (

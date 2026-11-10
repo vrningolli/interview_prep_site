@@ -1,0 +1,23 @@
+{
+  "name": "Prep Hub — Interview Prep Coach",
+  "short_name": "Prep Hub",
+  "description": "Interview prep with visual lessons, a system design track and an AI mock interviewer.",
+  "id": "./",
+  "start_url": "./#prep",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8fafc",
+  "theme_color": "#4f46e5",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Today", "url": "./#prep/today", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Mock interview", "url": "./#prep/mock", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "System design", "url": "./#prep/sd", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

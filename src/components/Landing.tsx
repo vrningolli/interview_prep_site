@@ -57,7 +57,7 @@ const STEPS: { Icon: LucideIcon; title: string; text: string }[] = [
 ];
 
 const FEATURES: { Icon: LucideIcon; title: string; text: string }[] = [
-  { Icon: Mic, title: "AI Mock Interviewer", text: "Live coding and system-design rounds with an AI interviewer, a timer and a rubric scorecard." },
+  { Icon: Mic, title: "AI Mock Interviewer", text: "Coding, system design and behavioral rounds with Veeru — hidden tests, voice mode and a rubric scorecard." },
   { Icon: Network, title: "System Design", text: `A 6-step framework, core building blocks and ${DESIGNS.length} classic designs with full walkthroughs.` },
   { Icon: PlayCircle, title: "Step-through visualizers", text: "Watch arrays shift, pointers move and trees rebalance — one step at a time." },
   { Icon: Crosshair, title: "Pattern Trainer", text: "Read a problem, pick the technique. Builds the instinct interviews test." },
@@ -67,11 +67,17 @@ const FEATURES: { Icon: LucideIcon; title: string; text: string }[] = [
   { Icon: Bot, title: "AI Agent Runner", text: "Try every lab on a free AI model, or bring your own Claude API key." },
 ];
 
+const SAMPLE_SCORES: [string, number, string][] = [
+  ["Requirements & scope", 4, "Pinned scope, scale and read receipts in the first five minutes."],
+  ["Deep dive & trade-offs", 3, "Good per-conversation ordering; skipped retries until prompted."],
+  ["Scale & reliability", 2, "No plan for a gateway server failing mid-conversation."],
+];
+
 const PREP_POINTS = [
   `${dsCount} data structures & ${algoCount} algorithms, each with a visualizer`,
   `${problemCount} graded problems with hints and solutions`,
   `System design track with ${DESIGNS.length} classic design walkthroughs`,
-  "AI mock interviews with a scored feedback report",
+  "AI mock interviews — coding, system design & behavioral — with scorecards",
   "Pattern trainer, spaced review and cheat sheets",
   `Company plans for ${companyNames.join(", ")}`,
 ];
@@ -281,6 +287,40 @@ export default function Landing() {
 
       <section className="block">
         <div className="block-head">
+          <span className="kicker">AI mock interviews</span>
+          <h2>Finish every practice round with a real scorecard</h2>
+          <p>Veeru asks follow-ups, runs your code against hidden tests, and grades you the way interviewers do.</p>
+        </div>
+        <div className="sample-score">
+          <div className="sample-head">
+            <div>
+              <span className="kicker-sm">Example scorecard · System design</span>
+              <h3>Design: Chat / messaging app</h3>
+            </div>
+            <span className="verdict verdict-mid">Lean hire · 3.0/4</span>
+          </div>
+          <div className="report-scores">
+            {SAMPLE_SCORES.map(([dim, score, note]) => (
+              <div key={dim} className="report-score">
+                <div className="report-score-head">
+                  <b>{dim}</b>
+                  <span>{score}/4</span>
+                </div>
+                <div className="pillar-track">
+                  <span className={`pillar-fill score-${score}`} style={{ width: `${(score / 4) * 100}%` }} />
+                </div>
+                <p>{note}</p>
+              </div>
+            ))}
+          </div>
+          <a className="btn-primary sample-cta" href="#prep/mock">
+            Try a free mock interview <ArrowRight size={16} />
+          </a>
+        </div>
+      </section>
+
+      <section className="block">
+        <div className="block-head">
           <span className="kicker">Features</span>
           <h2>Everything you need, nothing you don't</h2>
         </div>
@@ -347,7 +387,9 @@ export default function Landing() {
           <a href="ai-lab/#agent">Agent Runner</a>
         </div>
         <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} Prep Hub</span>
+          <span>
+            © {new Date().getFullYear()} Prep Hub · <a href="#privacy">Privacy</a>
+          </span>
           <span className="made-by">
             made with <span className="heart" aria-label="love">♥</span> · Virupaksh N
           </span>

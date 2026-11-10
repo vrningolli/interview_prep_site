@@ -1,6 +1,6 @@
 import { GraduationCap } from "lucide-react";
 
-export type Route = "home" | "prep";
+export type Route = "home" | "prep" | "privacy";
 
 /** Site-wide top navigation, shared by the landing page and Prep Coach (the AI Lab has a copy). */
 export default function SiteNav({ route }: { route: Route }) {

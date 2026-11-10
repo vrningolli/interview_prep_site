@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import SiteNav, { type Route } from "./components/SiteNav";
 import Landing from "./components/Landing";
 import PrepCoach from "./PrepCoach";
+import Privacy from "./components/Privacy";
 import { track } from "./analytics";
 
 /** Hash routing keeps the site a plain static deploy: "" = landing, "#prep" = Prep Coach. */
-const routeFromHash = (): Route => (location.hash.startsWith("#prep") ? "prep" : "home");
+const routeFromHash = (): Route =>
+  location.hash.startsWith("#prep") ? "prep" : location.hash.startsWith("#privacy") ? "privacy" : "home";
 
 const TITLES: Record<Route, string> = {
   home: "Prep Hub — Interview Prep Coach & AI Lab",
   prep: "Prep Coach — Interactive Interview Prep",
+  privacy: "Privacy — Prep Hub",
 };
 
 export default function App() {
@@ -42,7 +45,7 @@ export default function App() {
   return (
     <div className={`site site-${route}`}>
       <SiteNav route={route} />
-      {route === "prep" ? <PrepCoach /> : <Landing />}
+      {route === "prep" ? <PrepCoach /> : route === "privacy" ? <Privacy /> : <Landing />}
     </div>
   );
 }

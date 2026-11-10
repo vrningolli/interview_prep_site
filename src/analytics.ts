@@ -1,3 +1,5 @@
+import { markActive } from "./activity";
+
 /* Privacy-friendly product analytics.
 
    Events go to the site's own Worker (/api/event), which writes them to Cloudflare
@@ -32,9 +34,16 @@ export type EventName =
   | "interview_finished"
   | "interview_discarded"
   | "tests_run"
-  | "claude_key_checked";
+  | "claude_key_checked"
+  | "scorecard_shared"
+  | "task_done"
+  | "onboarded";
+
+/** Events that count as practising, for the streak on the Today screen. */
+const PRACTICE = new Set<EventName>(["design_opened", "interview_started", "interview_finished", "tests_run", "task_done"]);
 
 export function track(event: EventName, detail = "", value = 0): void {
+  if (PRACTICE.has(event)) markActive(); // local streak, works even with analytics off
   try {
     const host = location.hostname;
     if (host === "localhost" || host === "127.0.0.1" || navigator.doNotTrack === "1") return;

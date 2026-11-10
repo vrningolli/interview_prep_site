@@ -1,0 +1,93 @@
+/* ============ Today (Prep Coach home) + onboarding ============ */
+.today, .onb { display: flex; flex-direction: column; gap: 1.1rem; animation: fadeUp 0.25s ease; }
+.today .btn-primary, .onb .btn-primary { margin-top: 0; display: inline-flex; align-items: center; gap: 0.4rem; }
+.today .btn, .onb .btn { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+.onb-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: clamp(1.2rem, 4vw, 2rem); display: flex; flex-direction: column; gap: 1.2rem;
+  max-width: 720px; width: 100%; margin: 0 auto;
+}
+.onb-card h2 { margin: 0; letter-spacing: -0.02em; }
+.onb-card .hero-sub { margin: -0.6rem 0 0; }
+.onb-q { display: flex; flex-direction: column; gap: 0.55rem; }
+.onb-two { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+.onb-two .mfield b { color: var(--text); font-size: 0.95rem; }
+.onb-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.onb-chip {
+  display: inline-flex; align-items: center; gap: 0.3rem; font: inherit; font-weight: 700; cursor: pointer;
+  border: 2px solid var(--border); background: var(--surface); color: var(--text-2); border-radius: 999px; padding: 0.45rem 1rem;
+}
+.onb-chip:hover { border-color: var(--border-strong); }
+.onb-chip.on { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+.onb-row { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
+.onb-row .field { max-width: 220px; }
+.onb-hint { font-size: 0.8rem; color: var(--muted); }
+.onb-actions { display: flex; gap: 0.7rem; align-items: center; flex-wrap: wrap; }
+.onb-actions .btn-primary { padding: 0.7rem 1.5rem; font-size: 1rem; }
+
+.today-hero {
+  position: relative; display: flex; gap: 1.2rem; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;
+  background: linear-gradient(140deg, var(--surface), var(--primary-soft)); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: clamp(1.1rem, 3vw, 1.7rem);
+}
+.today-hero > div:first-child { flex: 1; min-width: 240px; }
+.today-hero h2 { margin: 0 0 0.35rem; letter-spacing: -0.02em; }
+.today-hero .hero-sub { margin: 0; }
+.today-edit { position: absolute; right: 1rem; bottom: 0.7rem; font-size: 0.8rem; }
+.today-streak {
+  display: grid; grid-template-columns: auto auto; column-gap: 0.4rem; align-items: center; justify-items: start;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem 1rem; min-width: 170px;
+}
+.today-streak b { font-size: 1.7rem; line-height: 1; }
+.today-streak > span:not(.flame) { grid-column: 1 / -1; font-size: 0.8rem; color: var(--muted); }
+.today-streak small { grid-column: 1 / -1; font-size: 0.72rem; color: var(--warn); font-weight: 700; margin-top: 0.2rem; }
+.flame { color: var(--border-strong); display: flex; }
+.flame.lit { color: #f97316; }
+.streak-dots { grid-column: 1 / -1; display: flex; gap: 4px; margin-top: 0.45rem; }
+.streak-dots i { width: 14px; height: 14px; border-radius: 4px; background: var(--border); }
+.streak-dots i.on { background: #f97316; }
+
+.today-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem; }
+.today-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  padding: 1rem 1.15rem; display: flex; flex-direction: column; gap: 0.7rem; align-items: flex-start;
+}
+.today-card header { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 0.5rem; }
+.today-card h3 { margin: 0; font-size: 1rem; display: flex; align-items: center; gap: 0.45rem; }
+.today-card h3 svg { color: var(--primary); }
+.today-card p { margin: 0; color: var(--text-2); font-size: 0.92rem; }
+.today-tasks ul { list-style: none; margin: 0; padding: 0; width: 100%; display: flex; flex-direction: column; gap: 0.45rem; }
+.today-tasks li { display: flex; justify-content: space-between; gap: 0.6rem; align-items: center; padding: 0.5rem 0.65rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); }
+.today-tasks label { display: flex; gap: 0.55rem; align-items: center; cursor: pointer; font-size: 0.9rem; }
+.today-tasks input { width: 17px; height: 17px; accent-color: var(--primary); flex-shrink: 0; }
+.today-tasks .linky { font-size: 0.78rem; white-space: nowrap; }
+.today-mock { background: linear-gradient(140deg, var(--surface), #f5f3ff); }
+.today-due { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; width: 100%; }
+.today-due button {
+  font: inherit; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 0.1rem;
+  border: 1px solid var(--border); background: var(--surface-2); border-radius: var(--radius-sm); padding: 0.6rem 0.8rem;
+}
+.today-due button:hover { border-color: var(--primary); }
+.today-due b { font-size: 1.5rem; line-height: 1.1; color: var(--text); }
+.today-due span { font-size: 0.78rem; color: var(--muted); }
+.today-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+@media (max-width: 760px) {
+  .today-grid, .onb-two { grid-template-columns: 1fr; }
+  .today-edit { position: static; }
+}
+
+/* install card */
+.today-install { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; background: linear-gradient(120deg, var(--primary-soft), var(--surface)); }
+.today-install img { width: 44px; height: 44px; border-radius: 11px; }
+.today-install > div { display: flex; gap: 0.8rem; align-items: center; flex: 1; min-width: 240px; }
+.today-install p b { color: var(--text); }
+
+/* privacy page */
+.privacy { max-width: 760px; margin: 0 auto; padding: 2.5rem clamp(1rem, 4vw, 2rem) 4rem; color: var(--text-2); line-height: 1.65; }
+.privacy h1 { color: var(--text); margin: 0 0 0.8rem; letter-spacing: -0.02em; }
+.privacy h2 { color: var(--text); font-size: 1.15rem; margin: 1.8rem 0 0.4rem; }
+.privacy-lead { font-size: 1.08rem; }
+.privacy ul { padding-left: 1.2rem; }
+.privacy-updated { color: var(--muted); font-size: 0.85rem; margin-top: 2rem; }

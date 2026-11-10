@@ -15,11 +15,13 @@ import {
   Check,
   Network,
   Mic,
+  Sun,
 } from "lucide-react";
 import { Tab, Topic } from "../types";
 import { useReviewItems, dueNow } from "../review/store";
 
 const TABS: { key: Tab; label: string; Icon: LucideIcon }[] = [
+  { key: "today", label: "Today", Icon: Sun },
   { key: "ds", label: "Data Structures", Icon: Boxes },
   { key: "algo", label: "Algorithms", Icon: Workflow },
   { key: "sd", label: "System Design", Icon: Network },

@@ -330,3 +330,9 @@
   .mascot-bubble { margin-bottom: 0; max-width: 240px; text-align: center; font-size: 0.82rem; padding: 0.55rem 0.85rem; border-radius: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { .mascot-layer { display: none; } }
+
+/* landing: example scorecard */
+.sample-score { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: clamp(1rem, 3vw, 1.6rem); display: flex; flex-direction: column; gap: 1rem; }
+.sample-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.8rem; flex-wrap: wrap; }
+.sample-head h3 { margin: 0.2rem 0 0; }
+.sample-cta { align-self: flex-start; margin-top: 0 !important; display: inline-flex; align-items: center; gap: 0.4rem; text-decoration: none; }
