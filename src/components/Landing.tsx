@@ -19,12 +19,15 @@ import {
   ShieldCheck,
   Smartphone,
   Zap,
+  Mic,
+  Network,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import rawContent from "../data/content.json";
 import Mascot from "./Mascot";
 import type { Content } from "../types";
 import { COMPANY_ORDER, COMPANIES } from "../data/companies";
+import { DESIGNS } from "../data/systemDesign";
 
 const content = rawContent as unknown as Content;
 
@@ -54,6 +57,8 @@ const STEPS: { Icon: LucideIcon; title: string; text: string }[] = [
 ];
 
 const FEATURES: { Icon: LucideIcon; title: string; text: string }[] = [
+  { Icon: Mic, title: "AI Mock Interviewer", text: "Live coding and system-design rounds with an AI interviewer, a timer and a rubric scorecard." },
+  { Icon: Network, title: "System Design", text: `A 6-step framework, core building blocks and ${DESIGNS.length} classic designs with full walkthroughs.` },
   { Icon: PlayCircle, title: "Step-through visualizers", text: "Watch arrays shift, pointers move and trees rebalance — one step at a time." },
   { Icon: Crosshair, title: "Pattern Trainer", text: "Read a problem, pick the technique. Builds the instinct interviews test." },
   { Icon: Building2, title: "Company Prep", text: "Study plans, interview loops and a STAR story bank for top tech companies." },
@@ -65,6 +70,8 @@ const FEATURES: { Icon: LucideIcon; title: string; text: string }[] = [
 const PREP_POINTS = [
   `${dsCount} data structures & ${algoCount} algorithms, each with a visualizer`,
   `${problemCount} graded problems with hints and solutions`,
+  `System design track with ${DESIGNS.length} classic design walkthroughs`,
+  "AI mock interviews with a scored feedback report",
   "Pattern trainer, spaced review and cheat sheets",
   `Company plans for ${companyNames.join(", ")}`,
 ];
@@ -219,7 +226,7 @@ export default function Landing() {
               <GraduationCap size={22} />
             </div>
             <h3>Prep Coach</h3>
-            <p>Everything for the coding rounds — learn it, practice it, review it.</p>
+            <p>Everything for coding and system-design rounds — learn it, practise it, then rehearse it with an AI interviewer.</p>
             <ul>
               {PREP_POINTS.map((t) => (
                 <li key={t}>

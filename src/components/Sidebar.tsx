@@ -13,6 +13,8 @@ import {
   GraduationCap,
   X,
   Check,
+  Network,
+  Mic,
 } from "lucide-react";
 import { Tab, Topic } from "../types";
 import { useReviewItems, dueNow } from "../review/store";
@@ -20,7 +22,9 @@ import { useReviewItems, dueNow } from "../review/store";
 const TABS: { key: Tab; label: string; Icon: LucideIcon }[] = [
   { key: "ds", label: "Data Structures", Icon: Boxes },
   { key: "algo", label: "Algorithms", Icon: Workflow },
+  { key: "sd", label: "System Design", Icon: Network },
   { key: "trainer", label: "Pattern Trainer", Icon: Crosshair },
+  { key: "mock", label: "Mock Interview", Icon: Mic },
   { key: "review", label: "Review", Icon: RotateCcw },
   { key: "kit", label: "Interview Kit", Icon: Compass },
   { key: "cheatsheet", label: "Cheat Sheet", Icon: FileText },
@@ -104,6 +108,7 @@ export default function Sidebar({
             onClick={() => onTab(t.key)}
           >
             <t.Icon size={17} strokeWidth={1.9} /> {t.label}
+            {t.key === "mock" && <span className="new-badge">AI</span>}
             {t.key === "review" && reviewDue > 0 && <span className="due-badge">{reviewDue}</span>}
           </button>
         ))}
